@@ -11,6 +11,7 @@ import UniformTypeIdentifiers
 struct ContentView: View {
     @StateObject private var viewModel = OCRViewModel()
     @State private var isDocumentPickerPresented = false
+    @State private var showingSourceActionSheet = false
     
     var body: some View {
         NavigationView {
@@ -38,6 +39,43 @@ struct ContentView: View {
         }
         .sheet(isPresented: $viewModel.showingShareSheet) {
             shareSheet
+        }
+        .sheet(isPresented: $viewModel.showingCamera) {
+            CameraView(isPresented: $viewModel.showingCamera) { image in
+                viewModel.handleCapturedImage(image)
+            }
+        }
+        .sheet(isPresented: $viewModel.showingDocumentScanner) {
+            if #available(iOS 13.0, *) {
+                DocumentScannerView(isPresented: $viewModel.showingDocumentScanner) { images in
+                    viewModel.handleScannedDocuments(images)
+                }
+            }
+        }
+        .actionSheet(isPresented: $showingSourceActionSheet) {
+            var buttons: [ActionSheet.Button] = []
+            
+            if #available(iOS 13.0, *) {
+                buttons.append(.default(Text("Document Scanner")) {
+                    viewModel.showDocumentScanner()
+                })
+            }
+            
+            buttons.append(.default(Text("Camera")) {
+                viewModel.showCamera()
+            })
+            
+            buttons.append(.default(Text("Files")) {
+                isDocumentPickerPresented = true
+            })
+            
+            buttons.append(.cancel())
+            
+            return ActionSheet(
+                title: Text("Select Source"),
+                message: Text("Choose how you want to add your document"),
+                buttons: buttons
+            )
         }
         .alert("Error", isPresented: $viewModel.showingError) {
             Button("OK") { }
@@ -78,6 +116,17 @@ struct ContentView: View {
             .padding()
             .background(Color.gray.opacity(0.1))
             .cornerRadius(8)
+        } else if !viewModel.capturedImages.isEmpty {
+            VStack(alignment: .leading, spacing: 8) {
+                Text("Captured Images:")
+                    .font(.headline)
+                Text("\(viewModel.capturedImages.count) image(s) captured")
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+            }
+            .padding()
+            .background(Color.gray.opacity(0.1))
+            .cornerRadius(8)
         }
     }
     
@@ -100,11 +149,11 @@ struct ContentView: View {
     
     private var selectPDFButton: some View {
         Button(action: {
-            isDocumentPickerPresented = true
+            showingSourceActionSheet = true
         }) {
             HStack {
                 Image(systemName: "plus.circle.fill")
-                Text("Select PDF Document")
+                Text("Add Document")
             }
             .font(.headline)
             .foregroundColor(.white)

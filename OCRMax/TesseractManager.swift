@@ -8,7 +8,7 @@
 import Foundation
 import UIKit
 
-class TesseractManager {
+final class TesseractManager: @unchecked Sendable {
     
     enum TesseractError: Error {
         case initializationFailed

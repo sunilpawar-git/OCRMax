@@ -15,6 +15,7 @@ protocol OCRServiceProtocol {
 
 protocol PDFProcessorProtocol {
     func extractImages(from url: URL) throws -> [UIImage]
+    func extractImagesBatch(from url: URL, batchSize: Int, batchHandler: @escaping ([UIImage], Int, Int) throws -> Void) throws
     func getPageCount(from url: URL) -> Int
     func extractTextFromPDF(url: URL) throws -> String
 }

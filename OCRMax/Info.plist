@@ -75,5 +75,9 @@
     <string>This app needs access to your camera to scan documents.</string>
     <key>NSDocumentsFolderUsageDescription</key>
     <string>This app needs access to your documents to import and export PDF and Word files.</string>
+    <key>LSSupportsOpeningDocumentsInPlace</key>
+    <false/>
+    <key>UISupportsDocumentBrowser</key>
+    <false/>
 </dict>
 </plist>

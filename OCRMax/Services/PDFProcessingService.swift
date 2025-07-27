@@ -52,6 +52,44 @@ final class PDFProcessingService: PDFProcessorProtocol {
         return images
     }
     
+    func extractImagesBatch(from url: URL, batchSize: Int = 20, batchHandler: @escaping ([UIImage], Int, Int) throws -> Void) throws {
+        guard url.startAccessingSecurityScopedResource() else {
+            throw OCRError.fileAccessDenied
+        }
+        defer { url.stopAccessingSecurityScopedResource() }
+        
+        guard let pdfDocument = PDFDocument(url: url) else {
+            throw OCRError.unsupportedFormat
+        }
+        
+        let pageCount = pdfDocument.pageCount
+        guard pageCount > 0 else {
+            throw OCRError.noTextFound
+        }
+        
+        let totalBatches = (pageCount + batchSize - 1) / batchSize
+        
+        for batchIndex in 0..<totalBatches {
+            let startPage = batchIndex * batchSize
+            let endPage = min(startPage + batchSize, pageCount)
+            
+            var batchImages: [UIImage] = []
+            
+            for pageIndex in startPage..<endPage {
+                guard let page = pdfDocument.page(at: pageIndex) else {
+                    continue
+                }
+                
+                let pageImage = renderPageAsImage(page: page)
+                batchImages.append(pageImage)
+            }
+            
+            if !batchImages.isEmpty {
+                try batchHandler(batchImages, batchIndex + 1, totalBatches)
+            }
+        }
+    }
+    
     func getPageCount(from url: URL) -> Int {
         guard url.startAccessingSecurityScopedResource() else {
             return 0

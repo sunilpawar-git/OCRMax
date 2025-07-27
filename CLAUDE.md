@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-OCR Max is an iOS application that converts scanned PDF documents into editable Word files using OCR technology. The app follows MVVM architecture with SOLID principles, utilizing Apple's Vision framework and supporting Tesseract OCR integration.
+OCR Max is an iOS application that converts scanned PDF documents into editable Word files using OCR technology. The app follows MVVM architecture with SOLID principles, utilizing Apple's Vision framework and supporting Tesseract OCR integration. The app supports processing large PDFs (up to 2000 pages, 200MB) through intelligent batch processing and memory management.
 
 ## Build Commands
 
@@ -61,12 +61,15 @@ The codebase follows **MVVM architecture with SOLID principles**:
 
 **Dependency Injection**: ViewModel accepts protocol dependencies, enabling easy testing and extensibility:
 ```swift
-init(ocrService: OCRServiceProtocol = VisionOCRService(),
-     pdfProcessor: PDFProcessorProtocol = PDFProcessingService(), 
+init(visionOCRService: VisionOCRService = VisionOCRService(),
+     tesseractOCRService: TesseractOCRService = TesseractOCRService(),
+     pdfProcessor: PDFProcessorProtocol = PDFProcessingService(),
      documentExporter: DocumentExporterProtocol = DocumentExportService())
 ```
 
 **Protocol-Based Design**: All services implement protocols for substitutability and testing.
+
+**Batch Processing**: Large PDFs (>100 pages) automatically use memory-efficient batch processing to prevent iOS memory termination.
 
 **Error Handling**: Centralized error types in `OCRError` enum with localized descriptions.
 
@@ -94,15 +97,23 @@ The following files exist for backward compatibility but are superseded by the n
 ## Key Implementation Details
 
 ### OCR Processing Flow
-1. PDF → Image extraction via `PDFProcessingService`
-2. Images → Text recognition via `VisionOCRService`
-3. Text → Document export via `DocumentExportService`
-4. Progress reporting through callback handlers
+1. **File Validation**: Check file size and page count with user warnings for large files
+2. **Processing Mode Selection**: Automatic choice between standard (<100 pages) and batch processing (>100 pages)
+3. **PDF → Image Extraction**: Via `PDFProcessingService` with memory-efficient batch loading
+4. **Images → Text Recognition**: Via `VisionOCRService` or `TesseractOCRService` 
+5. **Text → Document Export**: Via `DocumentExportService` with streaming for large files
+6. **Progress Reporting**: Real-time updates through callback handlers
+
+### Large PDF Support
+- **Batch Size**: Adaptive (10-50 pages) based on total document size
+- **Memory Management**: Images released after each batch to prevent crashes
+- **File Limits**: Warns at 50MB/500 pages, blocks at 200MB/2000 pages
+- **Progress Tracking**: Per-batch progress updates with estimated completion
 
 ### Document Export Formats
-- **RTF**: Primary format for Word compatibility
-- **DOCX**: XML-based Word format
-- **TXT**: Plain text fallback
+- **RTF**: Primary format for Word compatibility with streaming export for large files
+- **DOCX**: XML-based Word format with chunked processing
+- **TXT**: Plain text fallback with efficient memory usage
 
 ### Error Handling Strategy
 - `OCRError` enum covers all domain-specific errors
@@ -112,36 +123,55 @@ The following files exist for backward compatibility but are superseded by the n
 ## Extension Points
 
 ### Adding New OCR Engine
-Implement `OCRServiceProtocol` and inject into ViewModel:
+Implement `OCRServiceProtocol` and add to ViewModel's OCREngine enum:
 ```swift
-class TesseractOCRService: OCRServiceProtocol {
+class CustomOCRService: OCRServiceProtocol {
     func recognizeText(from image: UIImage) async throws -> String {
         // Implementation
+    }
+    
+    func recognizeText(from images: [UIImage], progressHandler: @escaping (String) -> Void) async throws -> String {
+        // Batch implementation for large documents
     }
 }
 ```
 
 ### Adding New Export Format
-1. Extend `DocumentFormat` enum
+1. Extend `DocumentFormat` enum in `OCRServiceProtocol.swift`
 2. Add format handling in `DocumentExportService.createDocumentContent()`
+3. Add streaming export case in `exportLargeDocument()` for large files
 
 ### Core Data Integration
 - `Persistence.swift` provides Core Data stack
 - `OCRMax.xcdatamodeld` contains data model
 - Currently minimal usage - prepared for future document history features
 
-## Important Notes
+## Critical Implementation Details
 
-- The app uses security-scoped resource access for PDF files
-- Vision framework OCR works best with high-resolution, clear text images
-- Export files are saved to app's Documents directory
-- Async operations use Swift's structured concurrency (async/await)
-- UI state management follows reactive programming patterns with Combine
+### Memory Management for Large Files
+- **Batch Processing**: PDFs >100 pages automatically use `performBatchOCRProcessing()`
+- **Image Disposal**: Each batch of images is processed and immediately released
+- **Streaming Export**: Files >1M characters use `FileHandle` for chunked writing
+- **Progress Updates**: Real-time UI updates prevent blocking during long operations
+
+### Security-Scoped Resources
+- All PDF access uses `startAccessingSecurityScopedResource()` / `stopAccessingSecurityScopedResource()`
+- Properly wrapped in defer blocks to ensure cleanup
+
+### Async/Await Architecture
+- All OCR operations use structured concurrency
+- `@MainActor` ensures UI updates on main thread
+- Progress callbacks use `Task { @MainActor in }` for thread safety
 
 ## Development Guidelines
 
 - No more than 300 lines per file
+- Always test large file scenarios when modifying PDF processing
+- Use batch processing patterns for any operations that scale with document size
+- Ensure proper memory cleanup in all image processing operations
 
 ## Development Best Practices
 
 - Write test first, then add code later
+- Test memory usage with large PDFs during development
+- Always handle file access errors gracefully with user-friendly messages
