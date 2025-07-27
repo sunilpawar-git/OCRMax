@@ -1,0 +1,580 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXContainerItemProxy section */
+		1080EFDD2E368A7E00BBF8AC /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 1080EFC02E368A7D00BBF8AC /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 1080EFC72E368A7D00BBF8AC;
+			remoteInfo = OCRMax;
+		};
+		1080EFE72E368A7E00BBF8AC /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 1080EFC02E368A7D00BBF8AC /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 1080EFC72E368A7D00BBF8AC;
+			remoteInfo = OCRMax;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		1080EFC82E368A7D00BBF8AC /* OCRMax.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = OCRMax.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		1080EFDC2E368A7E00BBF8AC /* OCRMaxTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = OCRMaxTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		1080EFE62E368A7E00BBF8AC /* OCRMaxUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = OCRMaxUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		1080EFEE2E368A7E00BBF8AC /* Exceptions for "OCRMax" folder in "OCRMax" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 1080EFC72E368A7D00BBF8AC /* OCRMax */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		1080EFCA2E368A7D00BBF8AC /* OCRMax */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				1080EFEE2E368A7E00BBF8AC /* Exceptions for "OCRMax" folder in "OCRMax" target */,
+			);
+			path = OCRMax;
+			sourceTree = "<group>";
+		};
+		1080EFDF2E368A7E00BBF8AC /* OCRMaxTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = OCRMaxTests;
+			sourceTree = "<group>";
+		};
+		1080EFE92E368A7E00BBF8AC /* OCRMaxUITests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = OCRMaxUITests;
+			sourceTree = "<group>";
+		};
+/* End PBXFileSystemSynchronizedRootGroup section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		1080EFC52E368A7D00BBF8AC /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		1080EFD92E368A7E00BBF8AC /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		1080EFE32E368A7E00BBF8AC /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		1080EFBF2E368A7D00BBF8AC = {
+			isa = PBXGroup;
+			children = (
+				1080EFCA2E368A7D00BBF8AC /* OCRMax */,
+				1080EFDF2E368A7E00BBF8AC /* OCRMaxTests */,
+				1080EFE92E368A7E00BBF8AC /* OCRMaxUITests */,
+				1080EFC92E368A7D00BBF8AC /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		1080EFC92E368A7D00BBF8AC /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				1080EFC82E368A7D00BBF8AC /* OCRMax.app */,
+				1080EFDC2E368A7E00BBF8AC /* OCRMaxTests.xctest */,
+				1080EFE62E368A7E00BBF8AC /* OCRMaxUITests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		1080EFC72E368A7D00BBF8AC /* OCRMax */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 1080EFEF2E368A7E00BBF8AC /* Build configuration list for PBXNativeTarget "OCRMax" */;
+			buildPhases = (
+				1080EFC42E368A7D00BBF8AC /* Sources */,
+				1080EFC52E368A7D00BBF8AC /* Frameworks */,
+				1080EFC62E368A7D00BBF8AC /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				1080EFCA2E368A7D00BBF8AC /* OCRMax */,
+			);
+			name = OCRMax;
+			packageProductDependencies = (
+			);
+			productName = OCRMax;
+			productReference = 1080EFC82E368A7D00BBF8AC /* OCRMax.app */;
+			productType = "com.apple.product-type.application";
+		};
+		1080EFDB2E368A7E00BBF8AC /* OCRMaxTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 1080EFF42E368A7E00BBF8AC /* Build configuration list for PBXNativeTarget "OCRMaxTests" */;
+			buildPhases = (
+				1080EFD82E368A7E00BBF8AC /* Sources */,
+				1080EFD92E368A7E00BBF8AC /* Frameworks */,
+				1080EFDA2E368A7E00BBF8AC /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				1080EFDE2E368A7E00BBF8AC /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				1080EFDF2E368A7E00BBF8AC /* OCRMaxTests */,
+			);
+			name = OCRMaxTests;
+			packageProductDependencies = (
+			);
+			productName = OCRMaxTests;
+			productReference = 1080EFDC2E368A7E00BBF8AC /* OCRMaxTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		1080EFE52E368A7E00BBF8AC /* OCRMaxUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 1080EFF72E368A7E00BBF8AC /* Build configuration list for PBXNativeTarget "OCRMaxUITests" */;
+			buildPhases = (
+				1080EFE22E368A7E00BBF8AC /* Sources */,
+				1080EFE32E368A7E00BBF8AC /* Frameworks */,
+				1080EFE42E368A7E00BBF8AC /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				1080EFE82E368A7E00BBF8AC /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				1080EFE92E368A7E00BBF8AC /* OCRMaxUITests */,
+			);
+			name = OCRMaxUITests;
+			packageProductDependencies = (
+			);
+			productName = OCRMaxUITests;
+			productReference = 1080EFE62E368A7E00BBF8AC /* OCRMaxUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		1080EFC02E368A7D00BBF8AC /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1640;
+				LastUpgradeCheck = 1640;
+				TargetAttributes = {
+					1080EFC72E368A7D00BBF8AC = {
+						CreatedOnToolsVersion = 16.4;
+					};
+					1080EFDB2E368A7E00BBF8AC = {
+						CreatedOnToolsVersion = 16.4;
+						TestTargetID = 1080EFC72E368A7D00BBF8AC;
+					};
+					1080EFE52E368A7E00BBF8AC = {
+						CreatedOnToolsVersion = 16.4;
+						TestTargetID = 1080EFC72E368A7D00BBF8AC;
+					};
+				};
+			};
+			buildConfigurationList = 1080EFC32E368A7D00BBF8AC /* Build configuration list for PBXProject "OCRMax" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 1080EFBF2E368A7D00BBF8AC;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 1080EFC92E368A7D00BBF8AC /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				1080EFC72E368A7D00BBF8AC /* OCRMax */,
+				1080EFDB2E368A7E00BBF8AC /* OCRMaxTests */,
+				1080EFE52E368A7E00BBF8AC /* OCRMaxUITests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		1080EFC62E368A7D00BBF8AC /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		1080EFDA2E368A7E00BBF8AC /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		1080EFE42E368A7E00BBF8AC /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		1080EFC42E368A7D00BBF8AC /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		1080EFD82E368A7E00BBF8AC /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		1080EFE22E368A7E00BBF8AC /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		1080EFDE2E368A7E00BBF8AC /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 1080EFC72E368A7D00BBF8AC /* OCRMax */;
+			targetProxy = 1080EFDD2E368A7E00BBF8AC /* PBXContainerItemProxy */;
+		};
+		1080EFE82E368A7E00BBF8AC /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 1080EFC72E368A7D00BBF8AC /* OCRMax */;
+			targetProxy = 1080EFE72E368A7E00BBF8AC /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		1080EFF02E368A7E00BBF8AC /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = OCRMax/OCRMax.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = CCVJR9P725;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = OCRMax/Info.plist;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.OCRMax;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		1080EFF12E368A7E00BBF8AC /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = OCRMax/OCRMax.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = CCVJR9P725;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = OCRMax/Info.plist;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.OCRMax;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		1080EFF22E368A7E00BBF8AC /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = CCVJR9P725;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.5;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		1080EFF32E368A7E00BBF8AC /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = CCVJR9P725;
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.5;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		1080EFF52E368A7E00BBF8AC /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = CCVJR9P725;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.5;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.OCRMaxTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/OCRMax.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/OCRMax";
+			};
+			name = Debug;
+		};
+		1080EFF62E368A7E00BBF8AC /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = CCVJR9P725;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.5;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.OCRMaxTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/OCRMax.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/OCRMax";
+			};
+			name = Release;
+		};
+		1080EFF82E368A7E00BBF8AC /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = CCVJR9P725;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.OCRMaxUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = OCRMax;
+			};
+			name = Debug;
+		};
+		1080EFF92E368A7E00BBF8AC /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = CCVJR9P725;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.OCRMaxUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = OCRMax;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		1080EFC32E368A7D00BBF8AC /* Build configuration list for PBXProject "OCRMax" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1080EFF22E368A7E00BBF8AC /* Debug */,
+				1080EFF32E368A7E00BBF8AC /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		1080EFEF2E368A7E00BBF8AC /* Build configuration list for PBXNativeTarget "OCRMax" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1080EFF02E368A7E00BBF8AC /* Debug */,
+				1080EFF12E368A7E00BBF8AC /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		1080EFF42E368A7E00BBF8AC /* Build configuration list for PBXNativeTarget "OCRMaxTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1080EFF52E368A7E00BBF8AC /* Debug */,
+				1080EFF62E368A7E00BBF8AC /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		1080EFF72E368A7E00BBF8AC /* Build configuration list for PBXNativeTarget "OCRMaxUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1080EFF82E368A7E00BBF8AC /* Debug */,
+				1080EFF92E368A7E00BBF8AC /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 1080EFC02E368A7D00BBF8AC /* Project object */;
+}
