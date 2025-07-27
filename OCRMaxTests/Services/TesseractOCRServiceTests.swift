@@ -6,7 +6,6 @@
 //
 
 import XCTest
-import SwiftyTesseract
 @testable import OCRMax
 
 final class TesseractOCRServiceTests: XCTestCase {
@@ -16,7 +15,7 @@ final class TesseractOCRServiceTests: XCTestCase {
     
     override func setUpWithError() throws {
         try super.setUpWithError()
-        tesseractService = TesseractOCRService(language: .english)
+        tesseractService = TesseractOCRService(language: "eng")
         testImage = createTestImage()
     }
     
@@ -28,22 +27,22 @@ final class TesseractOCRServiceTests: XCTestCase {
     
     func testInitialization() {
         XCTAssertNotNil(tesseractService)
-        XCTAssertTrue(tesseractService.isLanguageSupported(.english))
+        XCTAssertTrue(tesseractService.isLanguageSupported("eng"))
     }
     
     func testSupportedLanguages() {
         let supportedLanguages = tesseractService.getSupportedLanguages()
         
-        XCTAssertTrue(supportedLanguages.contains(.english))
-        XCTAssertTrue(supportedLanguages.contains(.french))
-        XCTAssertTrue(supportedLanguages.contains(.german))
-        XCTAssertTrue(supportedLanguages.contains(.spanish))
+        XCTAssertTrue(supportedLanguages.contains("eng"))
+        XCTAssertTrue(supportedLanguages.contains("fra"))
+        XCTAssertTrue(supportedLanguages.contains("deu"))
+        XCTAssertTrue(supportedLanguages.contains("spa"))
     }
     
     func testLanguageSupport() {
-        XCTAssertTrue(tesseractService.isLanguageSupported(.english))
-        XCTAssertTrue(tesseractService.isLanguageSupported(.french))
-        XCTAssertTrue(tesseractService.isLanguageSupported(.spanish))
+        XCTAssertTrue(tesseractService.isLanguageSupported("eng"))
+        XCTAssertTrue(tesseractService.isLanguageSupported("fra"))
+        XCTAssertTrue(tesseractService.isLanguageSupported("spa"))
     }
     
     func testRecognizeTextFromSingleImage() async throws {
@@ -94,21 +93,21 @@ final class TesseractOCRServiceTests: XCTestCase {
     }
     
     func testLanguageSetting() {
-        tesseractService.setLanguage(.french)
-        tesseractService.setLanguage(.german)
-        tesseractService.setLanguage(.spanish)
+        tesseractService.setLanguage("fra")
+        tesseractService.setLanguage("deu")
+        tesseractService.setLanguage("spa")
     }
     
     func testPageSegmentationMode() {
-        tesseractService.setPageSegmentationMode(.singleBlock)
-        tesseractService.setPageSegmentationMode(.singleColumn)
-        tesseractService.setPageSegmentationMode(.autoOSD)
+        tesseractService.setPageSegmentationMode(6)
+        tesseractService.setPageSegmentationMode(4)
+        tesseractService.setPageSegmentationMode(1)
     }
     
     func testEngineMode() {
-        tesseractService.setEngineMode(.tesseractLstmCombined)
-        tesseractService.setEngineMode(.tesseractOnly)
-        tesseractService.setEngineMode(.lstmOnly)
+        tesseractService.setEngineMode(3)
+        tesseractService.setEngineMode(0)
+        tesseractService.setEngineMode(1)
     }
     
     func testCharacterWhitelistAndBlacklist() {

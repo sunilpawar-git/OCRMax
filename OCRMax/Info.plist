@@ -68,13 +68,37 @@
                 <string>com.adobe.pdf</string>
             </array>
         </dict>
+        <dict>
+            <key>CFBundleTypeName</key>
+            <string>JPEG Image</string>
+            <key>CFBundleTypeRole</key>
+            <string>Viewer</string>
+            <key>LSHandlerRank</key>
+            <string>Alternate</string>
+            <key>LSItemContentTypes</key>
+            <array>
+                <string>public.jpeg</string>
+            </array>
+        </dict>
+        <dict>
+            <key>CFBundleTypeName</key>
+            <string>PNG Image</string>
+            <key>CFBundleTypeRole</key>
+            <string>Viewer</string>
+            <key>LSHandlerRank</key>
+            <string>Alternate</string>
+            <key>LSItemContentTypes</key>
+            <array>
+                <string>public.png</string>
+            </array>
+        </dict>
     </array>
     <key>NSPhotoLibraryUsageDescription</key>
     <string>This app needs access to your photo library to process scanned documents.</string>
     <key>NSCameraUsageDescription</key>
     <string>This app needs access to your camera to scan documents.</string>
     <key>NSDocumentsFolderUsageDescription</key>
-    <string>This app needs access to your documents to import and export PDF and Word files.</string>
+    <string>This app needs access to your documents to import and export PDF, image, and Word files.</string>
     <key>LSSupportsOpeningDocumentsInPlace</key>
     <false/>
     <key>UISupportsDocumentBrowser</key>

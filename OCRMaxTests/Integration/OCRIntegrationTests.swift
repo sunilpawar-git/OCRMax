@@ -215,7 +215,7 @@ final class OCRIntegrationTests: XCTestCase {
     @MainActor
     func testViewModelIntegration() async {
         let viewModel = OCRViewModel(
-            ocrService: ocrService,
+            visionOCRService: ocrService,
             pdfProcessor: pdfProcessor,
             documentExporter: documentExporter
         )

@@ -40,8 +40,8 @@ final class OCRViewModel: ObservableObject {
     @Published var capturedImages: [UIImage] = []
     
     // MARK: - Dependencies
-    private let visionOCRService: VisionOCRService
-    private let tesseractOCRService: TesseractOCRService
+    private let visionOCRService: OCRServiceProtocol
+    private let tesseractOCRService: OCRServiceProtocol
     private let pdfProcessor: PDFProcessorProtocol
     private let documentExporter: DocumentExporterProtocol
     
@@ -56,8 +56,8 @@ final class OCRViewModel: ObservableObject {
     }
     
     // MARK: - Initialization
-    init(visionOCRService: VisionOCRService = VisionOCRService(),
-         tesseractOCRService: TesseractOCRService = TesseractOCRService(),
+    init(visionOCRService: OCRServiceProtocol = VisionOCRService(),
+         tesseractOCRService: OCRServiceProtocol = TesseractOCRService(),
          pdfProcessor: PDFProcessorProtocol = PDFProcessingService(),
          documentExporter: DocumentExporterProtocol = DocumentExportService()) {
         self.visionOCRService = visionOCRService
@@ -90,6 +90,17 @@ final class OCRViewModel: ObservableObject {
         
         Task {
             await performImageOCRProcessing(images: images)
+        }
+    }
+    
+    func processImageFile(url: URL) {
+        guard !isProcessing else { return }
+        
+        selectedPDFURL = url
+        resetState()
+        
+        Task {
+            await loadAndProcessImageFile(url: url)
         }
     }
     
@@ -252,6 +263,28 @@ final class OCRViewModel: ObservableObject {
         }
     }
     
+    private func loadAndProcessImageFile(url: URL) async {
+        isProcessing = true
+        progressText = "Loading image file..."
+        
+        do {
+            guard url.startAccessingSecurityScopedResource() else {
+                throw OCRError.fileAccessDenied
+            }
+            defer { url.stopAccessingSecurityScopedResource() }
+            
+            let imageData = try Data(contentsOf: url)
+            guard let image = UIImage(data: imageData) else {
+                throw OCRError.invalidImage
+            }
+            
+            await performImageOCRProcessing(images: [image])
+            
+        } catch {
+            handleError(error)
+        }
+    }
+    
     private func performBatchOCRProcessing(url: URL, pageCount: Int) async {
         var allExtractedText = ""
         let batchSize = min(20, max(10, pageCount / 50))
@@ -382,7 +415,7 @@ final class OCRViewModel: ObservableObject {
     private func setupAvailableLanguages() {
         switch selectedOCREngine {
         case .vision:
-            availableLanguages = ["English"]
+            availableLanguages = visionOCRService.getSupportedLanguages()
         case .tesseract:
             availableLanguages = tesseractOCRService.getSupportedLanguages()
         }
@@ -403,7 +436,7 @@ extension OCRViewModel {
         hasExtractedText && !isProcessing
     }
     
-    var pdfFileName: String {
+    var selectedFileName: String {
         selectedPDFURL?.lastPathComponent ?? ""
     }
     

@@ -34,9 +34,30 @@ final class MockPDFProcessor: PDFProcessorProtocol {
         }
     }
     
+    func extractImagesBatch(from url: URL, batchSize: Int, batchHandler: @escaping ([UIImage], Int, Int) throws -> Void) throws {
+        extractImagesCallCount += 1
+        
+        if shouldSucceed {
+            let totalPages = mockImages.count
+            let batches = stride(from: 0, to: totalPages, by: batchSize).map { start in
+                Array(mockImages[start..<min(start + batchSize, totalPages)])
+            }
+            
+            for (batchIndex, batch) in batches.enumerated() {
+                try batchHandler(batch, batchIndex + 1, batches.count)
+            }
+        } else {
+            throw mockError
+        }
+    }
+    
     func getPageCount(from url: URL) -> Int {
         getPageCountCallCount += 1
-        return mockPageCount
+        if shouldSucceed {
+            return mockPageCount
+        } else {
+            return 0 // Return 0 for failed operations
+        }
     }
     
     func extractTextFromPDF(url: URL) throws -> String {

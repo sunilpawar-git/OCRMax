@@ -32,7 +32,7 @@ struct ContentView: View {
         }
         .fileImporter(
             isPresented: $isDocumentPickerPresented,
-            allowedContentTypes: [UTType.pdf],
+            allowedContentTypes: [UTType.pdf, UTType.jpeg, UTType.png],
             allowsMultipleSelection: false
         ) { result in
             handleFileSelection(result)
@@ -95,7 +95,7 @@ struct ContentView: View {
                 .font(.largeTitle)
                 .fontWeight(.bold)
             
-            Text("Convert scanned PDFs to editable Word documents")
+            Text("Convert scanned PDFs and images to editable Word documents")
                 .font(.subheadline)
                 .foregroundColor(.secondary)
                 .multilineTextAlignment(.center)
@@ -107,9 +107,9 @@ struct ContentView: View {
     private var selectedPDFSection: some View {
         if viewModel.hasSelectedPDF {
             VStack(alignment: .leading, spacing: 8) {
-                Text("Selected PDF:")
+                Text("Selected File:")
                     .font(.headline)
-                Text(viewModel.pdfFileName)
+                Text(viewModel.selectedFileName)
                     .font(.subheadline)
                     .foregroundColor(.secondary)
             }
@@ -214,10 +214,16 @@ struct ContentView: View {
         switch result {
         case .success(let urls):
             if let url = urls.first {
-                viewModel.processPDF(url: url)
+                let fileExtension = url.pathExtension.lowercased()
+                
+                if fileExtension == "pdf" {
+                    viewModel.processPDF(url: url)
+                } else if ["jpg", "jpeg", "png"].contains(fileExtension) {
+                    viewModel.processImageFile(url: url)
+                }
             }
         case .failure(let error):
-            print("Error selecting PDF: \(error)")
+            print("Error selecting file: \(error)")
         }
     }
 }

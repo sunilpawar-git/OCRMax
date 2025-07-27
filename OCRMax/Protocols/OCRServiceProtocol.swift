@@ -11,6 +11,8 @@ import UIKit
 protocol OCRServiceProtocol {
     func recognizeText(from image: UIImage) async throws -> String
     func recognizeText(from images: [UIImage], progressHandler: @escaping (String) -> Void) async throws -> String
+    func setLanguage(_ language: String)
+    func getSupportedLanguages() -> [String]
 }
 
 protocol PDFProcessorProtocol {

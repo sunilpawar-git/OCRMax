@@ -7,7 +7,6 @@
 
 import Foundation
 import UIKit
-import SwiftyTesseract
 @testable import OCRMax
 
 final class MockTesseractOCRService: OCRServiceProtocol {
@@ -52,6 +51,14 @@ final class MockTesseractOCRService: OCRServiceProtocol {
             lastProgressUpdates.append(errorMessage)
             throw OCRError.processingFailed
         }
+    }
+    
+    func setLanguage(_ language: String) {
+        // Mock implementation - no-op
+    }
+    
+    func getSupportedLanguages() -> [String] {
+        return ["eng", "fra", "deu", "spa"]
     }
     
     func reset() {

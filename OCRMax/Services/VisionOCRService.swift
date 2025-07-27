@@ -92,6 +92,15 @@ final class VisionOCRService: OCRServiceProtocol {
         request.usesLanguageCorrection = requestConfiguration.usesLanguageCorrection
     }
     
+    func setLanguage(_ language: String) {
+        // Vision framework handles language detection automatically
+        // This is a no-op for Apple Vision OCR
+    }
+    
+    func getSupportedLanguages() -> [String] {
+        return ["English"] // Apple Vision supports many languages automatically
+    }
+    
     private static func defaultConfiguration() -> VNRecognizeTextRequestConfiguration {
         var config = VNRecognizeTextRequestConfiguration()
         config.recognitionLevel = .accurate

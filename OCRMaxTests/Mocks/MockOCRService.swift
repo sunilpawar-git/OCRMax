@@ -7,9 +7,10 @@
 
 import Foundation
 import UIKit
+import Vision
 @testable import OCRMax
 
-final class MockOCRService: OCRServiceProtocol {
+final class MockVisionOCRService: OCRServiceProtocol {
     
     var shouldSucceed = true
     var mockText = "Sample OCR text"
@@ -46,6 +47,14 @@ final class MockOCRService: OCRServiceProtocol {
         } else {
             throw mockError
         }
+    }
+    
+    func setLanguage(_ language: String) {
+        // Mock implementation - no-op
+    }
+    
+    func getSupportedLanguages() -> [String] {
+        return ["English"]
     }
     
     func reset() {
