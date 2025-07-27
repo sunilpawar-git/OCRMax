@@ -11,6 +11,16 @@ import SwiftUI
 @MainActor
 final class OCRViewModel: ObservableObject {
     
+    // MARK: - OCR Engine Types
+    enum OCREngine: String, CaseIterable {
+        case vision = "Apple Vision"
+        case tesseract = "Tesseract OCR"
+        
+        var description: String {
+            return self.rawValue
+        }
+    }
+    
     // MARK: - Published Properties
     @Published var isProcessing = false
     @Published var extractedText = ""
@@ -20,19 +30,37 @@ final class OCRViewModel: ObservableObject {
     @Published var showingShareSheet = false
     @Published var errorMessage: String?
     @Published var showingError = false
+    @Published var selectedOCREngine: OCREngine = .vision
+    @Published var selectedLanguage: String = "eng"
+    @Published var availableLanguages: [String] = []
     
     // MARK: - Dependencies
-    private let ocrService: OCRServiceProtocol
+    private let visionOCRService: VisionOCRService
+    private let tesseractOCRService: TesseractOCRService
     private let pdfProcessor: PDFProcessorProtocol
     private let documentExporter: DocumentExporterProtocol
     
+    // MARK: - Computed Properties
+    private var currentOCRService: OCRServiceProtocol {
+        switch selectedOCREngine {
+        case .vision:
+            return visionOCRService
+        case .tesseract:
+            return tesseractOCRService
+        }
+    }
+    
     // MARK: - Initialization
-    init(ocrService: OCRServiceProtocol = VisionOCRService(),
+    init(visionOCRService: VisionOCRService = VisionOCRService(),
+         tesseractOCRService: TesseractOCRService = TesseractOCRService(),
          pdfProcessor: PDFProcessorProtocol = PDFProcessingService(),
          documentExporter: DocumentExporterProtocol = DocumentExportService()) {
-        self.ocrService = ocrService
+        self.visionOCRService = visionOCRService
+        self.tesseractOCRService = tesseractOCRService
         self.pdfProcessor = pdfProcessor
         self.documentExporter = documentExporter
+        
+        setupAvailableLanguages()
     }
     
     // MARK: - Public Methods
@@ -63,6 +91,18 @@ final class OCRViewModel: ObservableObject {
         selectedPDFURL = nil
     }
     
+    func switchOCREngine(to engine: OCREngine) {
+        selectedOCREngine = engine
+        setupAvailableLanguages()
+    }
+    
+    func setLanguage(_ language: String) {
+        selectedLanguage = language
+        if selectedOCREngine == .tesseract {
+            tesseractOCRService.setLanguage(language)
+        }
+    }
+    
     // MARK: - Private Methods
     private func resetState() {
         extractedText = ""
@@ -79,7 +119,11 @@ final class OCRViewModel: ObservableObject {
         do {
             let images = try pdfProcessor.extractImages(from: url)
             
-            let recognizedText = try await ocrService.recognizeText(from: images) { [weak self] progress in
+            if selectedOCREngine == .tesseract {
+                tesseractOCRService.setLanguage(selectedLanguage)
+            }
+            
+            let recognizedText = try await currentOCRService.recognizeText(from: images) { [weak self] progress in
                 Task { @MainActor in
                     self?.progressText = progress
                 }
@@ -133,6 +177,15 @@ final class OCRViewModel: ObservableObject {
     private func showError(_ message: String) {
         errorMessage = message
         showingError = true
+    }
+    
+    private func setupAvailableLanguages() {
+        switch selectedOCREngine {
+        case .vision:
+            availableLanguages = ["English"]
+        case .tesseract:
+            availableLanguages = tesseractOCRService.getSupportedLanguages()
+        }
     }
 }
 
