@@ -17,11 +17,13 @@ final class OCRViewModel: ObservableObject {
     enum OCREngine: String, CaseIterable {
         case vision = "Apple Vision"
         case tesseract = "Tesseract OCR"
+        case enhancedVision = "Enhanced Vision"
         
         var description: String {
             return self.rawValue
         }
     }
+    
     
     // MARK: - Published Properties
     @Published var isProcessing = false
@@ -39,12 +41,24 @@ final class OCRViewModel: ObservableObject {
     @Published var showingDocumentScanner = false
     @Published var capturedImages: [UIImage] = []
     @Published var processedDocuments: [ProcessedDocument] = []
+    @Published var selectedFormattingLevel: FormattingLevel = .basic
+    @Published var showingFormattingOptions = false
+    @Published var showingSubscriptionUpgrade = false
+    @Published var estimatedAICost: Double = 0.0
+    
+    // MARK: - Internal State for Enhanced Export
+    private var currentProcessedTextBlocks: [TextBlock]?
+    private var currentLayoutAnalysis: LayoutAnalysis?
     
     // MARK: - Dependencies
     private let visionOCRService: OCRServiceProtocol
     private let tesseractOCRService: OCRServiceProtocol
+    private let enhancedVisionOCRService: EnhancedOCRServiceProtocol
     private let pdfProcessor: PDFProcessorProtocol
     private let documentExporter: DocumentExporterProtocol
+    private let layoutAnalyzer: LayoutAnalyzerProtocol
+    private let subscriptionManager: SubscriptionManagerProtocol
+    private let aiFormattingService: AIFormattingServiceProtocol
     
     // MARK: - Computed Properties
     private var currentOCRService: OCRServiceProtocol {
@@ -53,21 +67,76 @@ final class OCRViewModel: ObservableObject {
             return visionOCRService
         case .tesseract:
             return tesseractOCRService
+        case .enhancedVision:
+            return enhancedVisionOCRService
         }
+    }
+    
+    var canUseEnhancedFormatting: Bool {
+        return subscriptionManager.canUseFeature(.enhancedLayout)
+    }
+    
+    var canUseAIFormatting: Bool {
+        return subscriptionManager.canUseFeature(.aiFormatting)
     }
     
     // MARK: - Initialization
     init(visionOCRService: OCRServiceProtocol = VisionOCRService(),
          tesseractOCRService: OCRServiceProtocol = TesseractOCRService(),
+         enhancedVisionOCRService: EnhancedOCRServiceProtocol = EnhancedVisionOCRService(),
          pdfProcessor: PDFProcessorProtocol = PDFProcessingService(),
-         documentExporter: DocumentExporterProtocol = DocumentExportService()) {
+         documentExporter: DocumentExporterProtocol = DocumentExportService(),
+         layoutAnalyzer: LayoutAnalyzerProtocol = LayoutAnalyzer(),
+         subscriptionManager: SubscriptionManagerProtocol = SubscriptionManager(),
+         aiFormattingService: AIFormattingServiceProtocol = AIFormattingService(subscriptionManager: SubscriptionManager())) {
         self.visionOCRService = visionOCRService
         self.tesseractOCRService = tesseractOCRService
+        self.enhancedVisionOCRService = enhancedVisionOCRService
         self.pdfProcessor = pdfProcessor
         self.documentExporter = documentExporter
+        self.layoutAnalyzer = layoutAnalyzer
+        self.subscriptionManager = subscriptionManager
+        self.aiFormattingService = aiFormattingService
         
         setupAvailableLanguages()
         loadProcessedDocuments()
+        checkSubscriptionStatus()
+    }
+    
+    // MARK: - Subscription Management
+    private func checkSubscriptionStatus() {
+        Task {
+            await subscriptionManager.checkSubscriptionStatus()
+        }
+    }
+    
+    func requestPremiumUpgrade(for tier: SubscriptionTier) {
+        Task {
+            do {
+                let success = try await subscriptionManager.requestPurchase(for: tier)
+                if success {
+                    showingSubscriptionUpgrade = false
+                    // Refresh available formatting options
+                    await checkSubscriptionStatus()
+                }
+            } catch {
+                handleError(error)
+            }
+        }
+    }
+    
+    func updateFormattingLevel(_ level: FormattingLevel) {
+        if level.requiresPremium && !subscriptionManager.isPremiumUser {
+            showingSubscriptionUpgrade = true
+            return
+        }
+        
+        selectedFormattingLevel = level
+        
+        // Update AI cost estimation if AI formatting is selected
+        if level == .aiEnhanced && !extractedText.isEmpty {
+            estimatedAICost = aiFormattingService.estimatedCost(for: extractedText)
+        }
     }
     
     // MARK: - Public Methods
@@ -198,6 +267,9 @@ final class OCRViewModel: ObservableObject {
         showingError = false
         capturedImages = []
         selectedPDFURL = nil
+        currentProcessedTextBlocks = nil
+        currentLayoutAnalysis = nil
+        estimatedAICost = 0.0
     }
     
     func saveProcessedDocument() {
@@ -267,14 +339,20 @@ final class OCRViewModel: ObservableObject {
                 tesseractOCRService.setLanguage(selectedLanguage)
             }
             
-            let recognizedText = try await currentOCRService.recognizeText(from: images) { [weak self] progress in
-                Task { @MainActor in
-                    self?.progressText = progress
+            // Enhanced processing with spatial formatting
+            if selectedFormattingLevel != .basic && selectedOCREngine == .enhancedVision {
+                await performEnhancedOCRProcessing(images: images)
+            } else {
+                // Standard processing
+                let recognizedText = try await currentOCRService.recognizeText(from: images) { [weak self] progress in
+                    Task { @MainActor in
+                        self?.progressText = progress
+                    }
                 }
+                
+                extractedText = recognizedText
+                progressText = "OCR processing completed successfully!"
             }
-            
-            extractedText = recognizedText
-            progressText = "OCR processing completed successfully!"
             
             // Save the processed document
             saveProcessedDocument()
@@ -439,7 +517,21 @@ final class OCRViewModel: ObservableObject {
         do {
             progressText = "Creating Word document..."
             
-            let documentURL = try documentExporter.exportDocument(from: extractedText, format: .rtf)
+            let documentURL: URL
+            
+            // Use enhanced export if we have processed text blocks with layout analysis
+            if selectedFormattingLevel != .basic,
+               let storedTextBlocks = currentProcessedTextBlocks,
+               let storedLayoutAnalysis = currentLayoutAnalysis {
+                documentURL = try documentExporter.exportDocument(
+                    from: storedTextBlocks,
+                    layoutAnalysis: storedLayoutAnalysis,
+                    format: .rtf
+                )
+            } else {
+                // Fallback to basic export
+                documentURL = try documentExporter.exportDocument(from: extractedText, format: .rtf)
+            }
             
             wordDocumentURL = documentURL
             showingShareSheet = true
@@ -478,6 +570,124 @@ final class OCRViewModel: ObservableObject {
             availableLanguages = visionOCRService.getSupportedLanguages()
         case .tesseract:
             availableLanguages = tesseractOCRService.getSupportedLanguages()
+        case .enhancedVision:
+            availableLanguages = enhancedVisionOCRService.getSupportedLanguages()
+        }
+    }
+    
+    // MARK: - Enhanced OCR Processing
+    
+    private func performEnhancedOCRProcessing(images: [UIImage]) async {
+        do {
+            progressText = "Performing enhanced OCR with spatial analysis..."
+            
+            // Extract text blocks with spatial positioning
+            let textBlocks = try await enhancedVisionOCRService.recognizeTextBlocks(from: images) { [weak self] progress in
+                Task { @MainActor in
+                    self?.progressText = progress
+                }
+            }
+            
+            guard !textBlocks.isEmpty else {
+                throw OCRError.noTextFound
+            }
+            
+            progressText = "Analyzing document layout..."
+            
+            // Analyze layout structure
+            let layoutAnalysis = layoutAnalyzer.analyzeLayout(from: textBlocks)
+            
+            // Apply formatting based on selected level
+            switch selectedFormattingLevel {
+            case .basic:
+                // Shouldn't reach here, but fallback to basic text
+                extractedText = textBlocks.map { $0.text }.joined(separator: "\n")
+                
+            case .enhanced:
+                // Use structured formatting
+                progressText = "Applying enhanced formatting..."
+                extractedText = await createEnhancedFormattedText(from: textBlocks, layoutAnalysis: layoutAnalysis)
+                
+            case .aiEnhanced:
+                // Use AI formatting
+                progressText = "Applying AI-enhanced formatting..."
+                extractedText = await createAIEnhancedFormattedText(from: textBlocks, layoutAnalysis: layoutAnalysis)
+            }
+            
+            progressText = "Enhanced OCR processing completed successfully!"
+            
+            // Store text blocks and layout analysis for enhanced export
+            currentProcessedTextBlocks = textBlocks
+            currentLayoutAnalysis = layoutAnalysis
+            
+            // Save the processed document
+            saveProcessedDocument()
+            
+            DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                self.isProcessing = false
+                self.progressText = ""
+            }
+            
+        } catch {
+            handleError(error)
+        }
+    }
+    
+    private func createEnhancedFormattedText(from textBlocks: [TextBlock], layoutAnalysis: LayoutAnalysis) async -> String {
+        // Create structured text based on layout analysis
+        var formattedText = ""
+        
+        for textGroup in layoutAnalysis.textGroups {
+            let groupText = textGroup.blocks.map { $0.text }.joined(separator: " ")
+            
+            switch textGroup.groupType {
+            case .header:
+                formattedText += "\n\n" + groupText.uppercased() + "\n"
+                formattedText += String(repeating: "=", count: min(groupText.count, 50)) + "\n"
+                
+            case .paragraph:
+                formattedText += "\n" + groupText + "\n"
+                
+            case .list:
+                formattedText += "\n• " + groupText
+                
+            case .table:
+                formattedText += "\n| " + groupText + " |"
+                
+            case .caption:
+                formattedText += "\n[" + groupText + "]\n"
+            }
+        }
+        
+        return formattedText.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+    
+    private func createAIEnhancedFormattedText(from textBlocks: [TextBlock], layoutAnalysis: LayoutAnalysis) async -> String {
+        do {
+            // Check subscription access
+            guard subscriptionManager.canUseFeature(.aiFormatting) else {
+                throw OCRError.subscriptionRequired
+            }
+            
+            let basicText = textBlocks.map { $0.text }.joined(separator: " ")
+            
+            // Update cost estimation
+            estimatedAICost = aiFormattingService.estimatedCost(for: basicText)
+            
+            // Apply AI formatting
+            let aiFormattedText = try await aiFormattingService.enhanceFormatting(text: basicText, layoutHints: layoutAnalysis)
+            
+            return aiFormattedText
+            
+        } catch OCRError.subscriptionRequired {
+            // Fallback to enhanced formatting
+            showingSubscriptionUpgrade = true
+            return await createEnhancedFormattedText(from: textBlocks, layoutAnalysis: layoutAnalysis)
+            
+        } catch {
+            // Fallback to enhanced formatting on AI service error
+            progressText = "AI service unavailable, using enhanced formatting..."
+            return await createEnhancedFormattedText(from: textBlocks, layoutAnalysis: layoutAnalysis)
         }
     }
 }

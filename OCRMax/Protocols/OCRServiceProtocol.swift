@@ -15,6 +15,11 @@ protocol OCRServiceProtocol {
     func getSupportedLanguages() -> [String]
 }
 
+protocol EnhancedOCRServiceProtocol: OCRServiceProtocol {
+    func recognizeTextBlocks(from image: UIImage) async throws -> [TextBlock]
+    func recognizeTextBlocks(from images: [UIImage], progressHandler: @escaping (String) -> Void) async throws -> [TextBlock]
+}
+
 protocol PDFProcessorProtocol {
     func extractImages(from url: URL) throws -> [UIImage]
     func extractImagesBatch(from url: URL, batchSize: Int, batchHandler: @escaping ([UIImage], Int, Int) throws -> Void) throws
@@ -24,12 +29,34 @@ protocol PDFProcessorProtocol {
 
 protocol DocumentExporterProtocol {
     func exportDocument(from text: String, format: DocumentFormat) throws -> URL
+    func exportDocument(from textBlocks: [TextBlock], layoutAnalysis: LayoutAnalysis, format: DocumentFormat) throws -> URL
 }
 
 protocol ProgressReporting {
     func reportProgress(_ message: String)
     func reportCompletion()
     func reportError(_ error: Error)
+}
+
+protocol LayoutAnalyzerProtocol {
+    func analyzeLayout(from textBlocks: [TextBlock]) -> LayoutAnalysis
+    func detectColumns(in textBlocks: [TextBlock]) -> [ColumnGroup]
+    func calculateSpacing(between textBlocks: [TextBlock]) -> SpacingInfo
+    func groupTextBlocks(_ textBlocks: [TextBlock]) -> [TextGroup]
+}
+
+protocol SubscriptionManagerProtocol {
+    var isPremiumUser: Bool { get }
+    var currentTier: SubscriptionTier { get }
+    func checkSubscriptionStatus() async
+    func canUseFeature(_ feature: PremiumFeature) -> Bool
+    func requestPurchase(for tier: SubscriptionTier) async throws -> Bool
+}
+
+protocol AIFormattingServiceProtocol {
+    func enhanceFormatting(text: String, layoutHints: LayoutAnalysis) async throws -> String
+    func isAvailable() -> Bool
+    func estimatedCost(for text: String) -> Double
 }
 
 enum DocumentFormat {
@@ -46,12 +73,100 @@ enum DocumentFormat {
     }
 }
 
+enum FormattingLevel: String, CaseIterable {
+    case basic = "Basic"
+    case enhanced = "Enhanced Layout"
+    case aiEnhanced = "AI Enhanced"
+    
+    var description: String {
+        return self.rawValue
+    }
+    
+    var requiresPremium: Bool {
+        switch self {
+        case .basic:
+            return false
+        case .enhanced, .aiEnhanced:
+            return true
+        }
+    }
+}
+
+enum SubscriptionTier: String, CaseIterable {
+    case free = "free"
+    case pro = "pro"
+    case proPlus = "pro_plus"
+    
+    var displayName: String {
+        switch self {
+        case .free: return "Free"
+        case .pro: return "Pro"
+        case .proPlus: return "Pro+"
+        }
+    }
+    
+    var monthlyPrice: Double {
+        switch self {
+        case .free: return 0.0
+        case .pro: return 4.99
+        case .proPlus: return 9.99
+        }
+    }
+}
+
+enum PremiumFeature: String, CaseIterable {
+    case aiFormatting = "ai_formatting"
+    case enhancedLayout = "enhanced_layout"
+    case batchProcessing = "batch_processing"
+    case prioritySupport = "priority_support"
+}
+
+struct LayoutAnalysis {
+    let columns: [ColumnGroup]
+    let spacing: SpacingInfo
+    let textGroups: [TextGroup]
+    let suggestedIndentation: [IndentationLevel]
+}
+
+struct ColumnGroup {
+    let textBlocks: [TextBlock]
+    let boundingBox: CGRect
+    let columnIndex: Int
+}
+
+struct SpacingInfo {
+    let averageLineSpacing: CGFloat
+    let averageWordSpacing: CGFloat
+    let paragraphSpacing: CGFloat
+}
+
+struct TextGroup {
+    let blocks: [TextBlock]
+    let groupType: TextGroupType
+    let confidence: Float
+}
+
+enum TextGroupType {
+    case header
+    case paragraph
+    case list
+    case table
+    case caption
+}
+
+struct IndentationLevel {
+    let textBlock: TextBlock
+    let indentationPoints: CGFloat
+}
+
 enum OCRError: LocalizedError {
     case invalidImage
     case processingFailed
     case noTextFound
     case unsupportedFormat
     case fileAccessDenied
+    case subscriptionRequired
+    case aiServiceUnavailable
     
     var errorDescription: String? {
         switch self {
@@ -65,6 +180,10 @@ enum OCRError: LocalizedError {
             return "Unsupported file format"
         case .fileAccessDenied:
             return "File access denied"
+        case .subscriptionRequired:
+            return "Premium subscription required for this feature"
+        case .aiServiceUnavailable:
+            return "AI formatting service is currently unavailable"
         }
     }
 }

@@ -31,6 +31,22 @@ final class DocumentExportService: DocumentExporterProtocol {
         return fileURL
     }
     
+    func exportDocument(from textBlocks: [TextBlock], layoutAnalysis: LayoutAnalysis, format: DocumentFormat) throws -> URL {
+        let fileName = generateFileName(for: format)
+        let fileURL = documentsDirectory.appendingPathComponent(fileName)
+        
+        let totalTextLength = textBlocks.reduce(0) { $0 + $1.text.count }
+        
+        if totalTextLength > 1_000_000 {
+            try exportLargeStructuredDocument(textBlocks: textBlocks, layoutAnalysis: layoutAnalysis, to: fileURL, format: format)
+        } else {
+            let documentContent = try createStructuredDocumentContent(from: textBlocks, layoutAnalysis: layoutAnalysis, format: format)
+            try documentContent.write(to: fileURL, atomically: true, encoding: .utf8)
+        }
+        
+        return fileURL
+    }
+    
     private func exportLargeDocument(text: String, to fileURL: URL, format: DocumentFormat) throws {
         let chunkSize = 100_000
         let chunks = text.chunked(into: chunkSize)
@@ -184,6 +200,265 @@ final class DocumentExportService: DocumentExporterProtocol {
         let timestamp = Date().timeIntervalSince1970
         return "OCR_Extract_\(timestamp).\(format.fileExtension)"
     }
+    
+    // MARK: - Structured Document Export Methods
+    
+    private func exportLargeStructuredDocument(textBlocks: [TextBlock], layoutAnalysis: LayoutAnalysis, to fileURL: URL, format: DocumentFormat) throws {
+        switch format {
+        case .rtf:
+            try exportLargeStructuredRTF(textBlocks: textBlocks, layoutAnalysis: layoutAnalysis, to: fileURL)
+        case .docx:
+            try exportLargeStructuredDocx(textBlocks: textBlocks, layoutAnalysis: layoutAnalysis, to: fileURL)
+        case .txt:
+            try exportLargeStructuredTxt(textBlocks: textBlocks, to: fileURL)
+        }
+    }
+    
+    private func createStructuredDocumentContent(from textBlocks: [TextBlock], layoutAnalysis: LayoutAnalysis, format: DocumentFormat) throws -> String {
+        switch format {
+        case .rtf:
+            return createStructuredRTFContent(from: textBlocks, layoutAnalysis: layoutAnalysis)
+        case .docx:
+            return createStructuredDocxContent(from: textBlocks, layoutAnalysis: layoutAnalysis)
+        case .txt:
+            return createStructuredTxtContent(from: textBlocks, layoutAnalysis: layoutAnalysis)
+        }
+    }
+    
+    private func createStructuredRTFContent(from textBlocks: [TextBlock], layoutAnalysis: LayoutAnalysis) -> String {
+        let header = """
+        {\\rtf1\\ansi\\deff0 {\\fonttbl {\\f0 Times New Roman;}}
+        \\f0\\fs24
+        """
+        
+        var content = ""
+        
+        for textGroup in layoutAnalysis.textGroups {
+            switch textGroup.groupType {
+            case .header:
+                content += formatRTFHeader(textGroup)
+            case .paragraph:
+                content += formatRTFParagraph(textGroup, spacing: layoutAnalysis.spacing)
+            case .list:
+                content += formatRTFList(textGroup)
+            case .table:
+                content += formatRTFTable(textGroup)
+            case .caption:
+                content += formatRTFCaption(textGroup)
+            }
+            content += "\\par\\par\n"
+        }
+        
+        let footer = "}"
+        return header + content + footer
+    }
+    
+    private func createStructuredDocxContent(from textBlocks: [TextBlock], layoutAnalysis: LayoutAnalysis) -> String {
+        let xmlHeader = """
+        <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+        <w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+        <w:body>
+        """
+        
+        var xmlContent = ""
+        
+        for textGroup in layoutAnalysis.textGroups {
+            switch textGroup.groupType {
+            case .header:
+                xmlContent += formatDocxHeader(textGroup)
+            case .paragraph:
+                xmlContent += formatDocxParagraph(textGroup, spacing: layoutAnalysis.spacing)
+            case .list:
+                xmlContent += formatDocxList(textGroup)
+            case .table:
+                xmlContent += formatDocxTable(textGroup)
+            case .caption:
+                xmlContent += formatDocxCaption(textGroup)
+            }
+        }
+        
+        let xmlFooter = """
+        </w:body>
+        </w:document>
+        """
+        
+        return xmlHeader + xmlContent + xmlFooter
+    }
+    
+    private func createStructuredTxtContent(from textBlocks: [TextBlock], layoutAnalysis: LayoutAnalysis) -> String {
+        var content = ""
+        
+        for textGroup in layoutAnalysis.textGroups {
+            let groupText = textGroup.blocks.map { $0.text }.joined(separator: " ")
+            
+            switch textGroup.groupType {
+            case .header:
+                content += "\n" + groupText.uppercased() + "\n"
+                content += String(repeating: "=", count: min(groupText.count, 50)) + "\n\n"
+            case .paragraph:
+                content += groupText + "\n\n"
+            case .list:
+                content += "• " + groupText + "\n"
+            case .table:
+                content += "| " + groupText + " |\n"
+            case .caption:
+                content += "[" + groupText + "]\n\n"
+            }
+        }
+        
+        return content
+    }
+    
+    // MARK: - RTF Formatting Methods
+    
+    private func formatRTFHeader(_ textGroup: TextGroup) -> String {
+        let text = textGroup.blocks.map { $0.text }.joined(separator: " ")
+        let escapedText = text.replacingOccurrences(of: "\\", with: "\\\\")
+            .replacingOccurrences(of: "{", with: "\\{")
+            .replacingOccurrences(of: "}", with: "\\}")
+        
+        return "\\fs32\\b \(escapedText)\\b0\\fs24\\par\n"
+    }
+    
+    private func formatRTFParagraph(_ textGroup: TextGroup, spacing: SpacingInfo) -> String {
+        let text = textGroup.blocks.map { $0.text }.joined(separator: " ")
+        let escapedText = text.replacingOccurrences(of: "\\", with: "\\\\")
+            .replacingOccurrences(of: "{", with: "\\{")
+            .replacingOccurrences(of: "}", with: "\\}")
+        
+        return "\(escapedText)\\par\n"
+    }
+    
+    private func formatRTFList(_ textGroup: TextGroup) -> String {
+        let text = textGroup.blocks.map { $0.text }.joined(separator: " ")
+        let escapedText = text.replacingOccurrences(of: "\\", with: "\\\\")
+            .replacingOccurrences(of: "{", with: "\\{")
+            .replacingOccurrences(of: "}", with: "\\}")
+        
+        return "\\li360 • \(escapedText)\\li0\\par\n"
+    }
+    
+    private func formatRTFTable(_ textGroup: TextGroup) -> String {
+        let text = textGroup.blocks.map { $0.text }.joined(separator: " | ")
+        let escapedText = text.replacingOccurrences(of: "\\", with: "\\\\")
+            .replacingOccurrences(of: "{", with: "\\{")
+            .replacingOccurrences(of: "}", with: "\\}")
+        
+        return "\\trowd\\cellx2000\\cellx4000\\cellx6000 \(escapedText)\\cell\\row\n"
+    }
+    
+    private func formatRTFCaption(_ textGroup: TextGroup) -> String {
+        let text = textGroup.blocks.map { $0.text }.joined(separator: " ")
+        let escapedText = text.replacingOccurrences(of: "\\", with: "\\\\")
+            .replacingOccurrences(of: "{", with: "\\{")
+            .replacingOccurrences(of: "}", with: "\\}")
+        
+        return "\\i \(escapedText)\\i0\\par\n"
+    }
+    
+    // MARK: - DOCX Formatting Methods
+    
+    private func formatDocxHeader(_ textGroup: TextGroup) -> String {
+        let text = textGroup.blocks.map { $0.text }.joined(separator: " ")
+        return """
+        <w:p>
+        <w:pPr><w:pStyle w:val="Heading1"/></w:pPr>
+        <w:r><w:rPr><w:b/><w:sz w:val="32"/></w:rPr>
+        <w:t>\(text.xmlEscaped)</w:t></w:r>
+        </w:p>
+        """
+    }
+    
+    private func formatDocxParagraph(_ textGroup: TextGroup, spacing: SpacingInfo) -> String {
+        let text = textGroup.blocks.map { $0.text }.joined(separator: " ")
+        return """
+        <w:p>
+        <w:r><w:t>\(text.xmlEscaped)</w:t></w:r>
+        </w:p>
+        """
+    }
+    
+    private func formatDocxList(_ textGroup: TextGroup) -> String {
+        let text = textGroup.blocks.map { $0.text }.joined(separator: " ")
+        return """
+        <w:p>
+        <w:pPr><w:numPr><w:ilvl w:val="0"/><w:numId w:val="1"/></w:numPr></w:pPr>
+        <w:r><w:t>\(text.xmlEscaped)</w:t></w:r>
+        </w:p>
+        """
+    }
+    
+    private func formatDocxTable(_ textGroup: TextGroup) -> String {
+        let text = textGroup.blocks.map { $0.text }.joined(separator: " ")
+        return """
+        <w:tbl>
+        <w:tr>
+        <w:tc><w:p><w:r><w:t>\(text.xmlEscaped)</w:t></w:r></w:p></w:tc>
+        </w:tr>
+        </w:tbl>
+        """
+    }
+    
+    private func formatDocxCaption(_ textGroup: TextGroup) -> String {
+        let text = textGroup.blocks.map { $0.text }.joined(separator: " ")
+        return """
+        <w:p>
+        <w:r><w:rPr><w:i/></w:rPr>
+        <w:t>\(text.xmlEscaped)</w:t></w:r>
+        </w:p>
+        """
+    }
+    
+    // MARK: - Large Document Export Methods
+    
+    private func exportLargeStructuredRTF(textBlocks: [TextBlock], layoutAnalysis: LayoutAnalysis, to fileURL: URL) throws {
+        let header = """
+        {\\rtf1\\ansi\\deff0 {\\fonttbl {\\f0 Times New Roman;}}
+        \\f0\\fs24
+        """
+        
+        try header.write(to: fileURL, atomically: false, encoding: .utf8)
+        let fileHandle = try FileHandle(forWritingTo: fileURL)
+        defer { fileHandle.closeFile() }
+        fileHandle.seekToEndOfFile()
+        
+        for textGroup in layoutAnalysis.textGroups {
+            let formattedContent = formatRTFParagraph(textGroup, spacing: layoutAnalysis.spacing) + "\\par\\par\n"
+            fileHandle.write(formattedContent.data(using: .utf8)!)
+        }
+        
+        fileHandle.write("}".data(using: .utf8)!)
+    }
+    
+    private func exportLargeStructuredDocx(textBlocks: [TextBlock], layoutAnalysis: LayoutAnalysis, to fileURL: URL) throws {
+        let xmlHeader = """
+        <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+        <w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+        <w:body>
+        """
+        
+        try xmlHeader.write(to: fileURL, atomically: false, encoding: .utf8)
+        let fileHandle = try FileHandle(forWritingTo: fileURL)
+        defer { fileHandle.closeFile() }
+        fileHandle.seekToEndOfFile()
+        
+        for textGroup in layoutAnalysis.textGroups {
+            let formattedContent = formatDocxParagraph(textGroup, spacing: layoutAnalysis.spacing)
+            fileHandle.write(formattedContent.data(using: .utf8)!)
+        }
+        
+        let xmlFooter = """
+        </w:body>
+        </w:document>
+        """
+        fileHandle.write(xmlFooter.data(using: .utf8)!)
+    }
+    
+    private func exportLargeStructuredTxt(textBlocks: [TextBlock], to fileURL: URL) throws {
+        let sortedBlocks = TextBlock.sortedByPosition(textBlocks)
+        let content = sortedBlocks.map { $0.text }.joined(separator: "\n")
+        try content.write(to: fileURL, atomically: true, encoding: .utf8)
+    }
 }
 
 extension String {
@@ -193,6 +468,15 @@ extension String {
             let end = index(start, offsetBy: min(size, count - $0))
             return String(self[start..<end])
         }
+    }
+    
+    var xmlEscaped: String {
+        return self
+            .replacingOccurrences(of: "&", with: "&amp;")
+            .replacingOccurrences(of: "<", with: "&lt;")
+            .replacingOccurrences(of: ">", with: "&gt;")
+            .replacingOccurrences(of: "\"", with: "&quot;")
+            .replacingOccurrences(of: "'", with: "&apos;")
     }
 }
 
