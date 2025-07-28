@@ -184,15 +184,21 @@ final class OCRViewModel: ObservableObject {
         processImages(images)
     }
     
-    // MARK: - Private Methods
-    private func resetState() {
+    func processImages() async {
+        await processImages(capturedImages)
+    }
+    
+    func resetState() {
         extractedText = ""
         progressText = ""
         wordDocumentURL = nil
         errorMessage = nil
         showingError = false
         capturedImages = []
+        selectedPDFURL = nil
     }
+    
+    // MARK: - Private Methods
     
     private func performOCRProcessing(url: URL) async {
         isProcessing = true
