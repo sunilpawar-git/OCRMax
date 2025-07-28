@@ -9,17 +9,18 @@ import SwiftUI
 
 struct ContentView: View {
     @State private var selectedTab = 0
+    @StateObject private var sharedViewModel = OCRViewModel()
     
     var body: some View {
         TabView(selection: $selectedTab) {
-            ScanView()
+            ScanView(viewModel: sharedViewModel)
                 .tabItem {
                     Image(systemName: "camera.viewfinder")
                     Text("Scan")
                 }
                 .tag(0)
             
-            LibraryView()
+            LibraryView(viewModel: sharedViewModel)
                 .tabItem {
                     Image(systemName: "folder.fill")
                     Text("Library")

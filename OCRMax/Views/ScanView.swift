@@ -9,9 +9,13 @@ import SwiftUI
 import UniformTypeIdentifiers
 
 struct ScanView: View {
-    @StateObject private var viewModel = OCRViewModel()
+    @ObservedObject var viewModel: OCRViewModel
     @State private var isDocumentPickerPresented = false
     @State private var showingSourceActionSheet = false
+    
+    init(viewModel: OCRViewModel) {
+        self.viewModel = viewModel
+    }
     
     var body: some View {
         NavigationStack {
@@ -328,7 +332,6 @@ struct ScanView: View {
                 .disabled(!viewModel.canConvertToWord)
                 
                 Button(action: {
-                    // Reset to scan again
                     viewModel.resetState()
                 }) {
                     HStack {
@@ -372,5 +375,5 @@ struct ScanView: View {
 }
 
 #Preview {
-    ScanView()
+    ScanView(viewModel: OCRViewModel())
 }

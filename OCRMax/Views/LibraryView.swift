@@ -8,7 +8,11 @@
 import SwiftUI
 
 struct LibraryView: View {
-    @State private var recentDocuments: [DocumentItem] = []
+    @ObservedObject var viewModel: OCRViewModel
+    
+    init(viewModel: OCRViewModel) {
+        self.viewModel = viewModel
+    }
     
     var body: some View {
         NavigationStack {
@@ -16,7 +20,7 @@ struct LibraryView: View {
                 Color(.systemGroupedBackground)
                     .ignoresSafeArea()
                 
-                if recentDocuments.isEmpty {
+                if viewModel.processedDocuments.isEmpty {
                     emptyStateView
                 } else {
                     documentListView
@@ -25,7 +29,7 @@ struct LibraryView: View {
             .navigationTitle("Library")
             .navigationBarTitleDisplayMode(.large)
             .onAppear {
-                loadRecentDocuments()
+                viewModel.loadProcessedDocuments()
             }
         }
     }
@@ -54,7 +58,7 @@ struct LibraryView: View {
             Spacer()
             
             // Quick Action Button
-            NavigationLink(destination: ScanView()) {
+            NavigationLink(destination: ScanView(viewModel: viewModel)) {
                 HStack {
                     Image(systemName: "plus.circle.fill")
                     Text("Start Scanning")
@@ -72,26 +76,30 @@ struct LibraryView: View {
     }
     
     private var documentListView: some View {
-        ScrollView {
-            LazyVStack(spacing: 12) {
-                ForEach(recentDocuments) { document in
-                    DocumentRowView(document: document) {
-                        shareDocument(document)
+        List {
+            ForEach(viewModel.processedDocuments) { document in
+                NavigationLink(destination: DocumentDetailView(document: document)) {
+                    ProcessedDocumentRowView(document: document)
+                }
+                .listRowSeparator(.hidden)
+                .listRowBackground(Color.clear)
+                .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 4, trailing: 16))
+                .contextMenu {
+                    Button(role: .destructive, action: {
+                        viewModel.deleteDocument(document)
+                    }) {
+                        Label("Delete", systemImage: "trash")
                     }
                 }
             }
-            .padding()
+            .onDelete(perform: { indexSet in
+                viewModel.deleteDocuments(at: indexSet)
+            })
         }
+        .listStyle(PlainListStyle())
+        .background(Color(.systemGroupedBackground))
     }
     
-    private func loadRecentDocuments() {
-        // TODO: Load from Core Data or UserDefaults
-        // For now, this is empty - will be populated when documents are processed
-    }
-    
-    private func shareDocument(_ document: DocumentItem) {
-        // TODO: Implement sharing functionality
-    }
 }
 
 struct DocumentItem: Identifiable {
@@ -122,6 +130,57 @@ struct DocumentItem: Identifiable {
             case .text: return .green
             }
         }
+    }
+}
+
+struct ProcessedDocumentRowView: View {
+    let document: ProcessedDocument
+    
+    var body: some View {
+        HStack(spacing: 16) {
+            // Document Icon
+            ZStack {
+                RoundedRectangle(cornerRadius: 8)
+                    .fill(Color.blue.opacity(0.1))
+                    .frame(width: 50, height: 60)
+                
+                Image(systemName: "doc.text.fill")
+                    .font(.title2)
+                    .foregroundColor(.blue)
+            }
+            
+            // Document Info
+            VStack(alignment: .leading, spacing: 4) {
+                Text(document.name)
+                    .font(.headline)
+                    .lineLimit(2)
+                
+                HStack(spacing: 8) {
+                    Text(document.createdDate, style: .date)
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                    
+                    Text(document.createdDate, style: .time)
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+                
+                Text("OCR Document")
+                    .font(.caption)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 2)
+                    .background(Color.blue.opacity(0.1))
+                    .foregroundColor(.blue)
+                    .cornerRadius(4)
+            }
+            
+            Spacer()
+        }
+        .padding(.vertical, 12)
+        .padding(.horizontal, 16)
+        .background(Color(.systemBackground))
+        .cornerRadius(12)
+        .shadow(color: .black.opacity(0.05), radius: 2, x: 0, y: 1)
     }
 }
 
@@ -178,5 +237,5 @@ struct DocumentRowView: View {
 }
 
 #Preview {
-    LibraryView()
+    LibraryView(viewModel: OCRViewModel())
 }

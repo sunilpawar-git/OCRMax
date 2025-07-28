@@ -38,6 +38,7 @@ final class OCRViewModel: ObservableObject {
     @Published var showingCamera = false
     @Published var showingDocumentScanner = false
     @Published var capturedImages: [UIImage] = []
+    @Published var processedDocuments: [ProcessedDocument] = []
     
     // MARK: - Dependencies
     private let visionOCRService: OCRServiceProtocol
@@ -66,6 +67,7 @@ final class OCRViewModel: ObservableObject {
         self.documentExporter = documentExporter
         
         setupAvailableLanguages()
+        loadProcessedDocuments()
     }
     
     // MARK: - Public Methods
@@ -198,6 +200,49 @@ final class OCRViewModel: ObservableObject {
         selectedPDFURL = nil
     }
     
+    func saveProcessedDocument() {
+        guard !extractedText.isEmpty else { return }
+        
+        let documentName = selectedPDFURL?.deletingPathExtension().lastPathComponent ?? "Scanned Document"
+        let document = ProcessedDocument(
+            name: documentName,
+            extractedText: extractedText,
+            createdDate: Date(),
+            sourceURL: selectedPDFURL,
+            wordDocumentURL: wordDocumentURL
+        )
+        
+        processedDocuments.append(document)
+        
+        // Save to UserDefaults for persistence
+        saveDocumentsToStorage()
+    }
+    
+    private func saveDocumentsToStorage() {
+        let encoder = JSONEncoder()
+        if let encoded = try? encoder.encode(processedDocuments) {
+            UserDefaults.standard.set(encoded, forKey: "ProcessedDocuments")
+        }
+    }
+    
+    func loadProcessedDocuments() {
+        let decoder = JSONDecoder()
+        if let data = UserDefaults.standard.data(forKey: "ProcessedDocuments"),
+           let documents = try? decoder.decode([ProcessedDocument].self, from: data) {
+            processedDocuments = documents
+        }
+    }
+    
+    func deleteDocument(_ document: ProcessedDocument) {
+        processedDocuments.removeAll { $0.id == document.id }
+        saveDocumentsToStorage()
+    }
+    
+    func deleteDocuments(at offsets: IndexSet) {
+        processedDocuments.remove(atOffsets: offsets)
+        saveDocumentsToStorage()
+    }
+    
     // MARK: - Private Methods
     
     private func performOCRProcessing(url: URL) async {
@@ -231,6 +276,9 @@ final class OCRViewModel: ObservableObject {
             extractedText = recognizedText
             progressText = "OCR processing completed successfully!"
             
+            // Save the processed document
+            saveProcessedDocument()
+            
             DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
                 self.isProcessing = false
                 self.progressText = ""
@@ -258,6 +306,9 @@ final class OCRViewModel: ObservableObject {
             
             extractedText = recognizedText
             progressText = "OCR processing completed successfully!"
+            
+            // Save the processed document
+            saveProcessedDocument()
             
             DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
                 self.isProcessing = false
@@ -320,6 +371,9 @@ final class OCRViewModel: ObservableObject {
             }
             
             progressText = "OCR processing completed successfully!"
+            
+            // Save the processed document
+            saveProcessedDocument()
             
             DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
                 self.isProcessing = false
@@ -448,5 +502,27 @@ extension OCRViewModel {
     
     var hasSelectedSource: Bool {
         hasSelectedPDF || !capturedImages.isEmpty
+    }
+}
+
+// MARK: - ProcessedDocument Model
+struct ProcessedDocument: Codable, Identifiable {
+    let id: UUID = UUID()
+    let name: String
+    let extractedText: String
+    let createdDate: Date
+    let sourceURL: URL?
+    let wordDocumentURL: URL?
+    
+    private enum CodingKeys: String, CodingKey {
+        case id, name, extractedText, createdDate, sourceURL, wordDocumentURL
+    }
+    
+    init(name: String, extractedText: String, createdDate: Date, sourceURL: URL?, wordDocumentURL: URL?) {
+        self.name = name
+        self.extractedText = extractedText
+        self.createdDate = createdDate
+        self.sourceURL = sourceURL
+        self.wordDocumentURL = wordDocumentURL
     }
 }
