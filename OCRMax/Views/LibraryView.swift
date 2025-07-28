@@ -35,7 +35,7 @@ struct LibraryView: View {
             Spacer()
             
             VStack(spacing: 16) {
-                Image(systemName: "doc.stack")
+                Image(systemName: "folder")
                     .font(.system(size: 80))
                     .foregroundColor(.secondary)
                 

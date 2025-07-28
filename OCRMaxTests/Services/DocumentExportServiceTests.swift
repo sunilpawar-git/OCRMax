@@ -42,7 +42,7 @@ final class DocumentExportServiceTests: XCTestCase {
         XCTAssertTrue(FileManager.default.fileExists(atPath: resultURL.path), "RTF file should be created")
         XCTAssertEqual(resultURL.pathExtension, "rtf", "File should have .rtf extension")
         
-        let content = try String(contentsOf: resultURL)
+        let content = try String(contentsOf: resultURL, encoding: .utf8)
         XCTAssertTrue(content.contains("{\\rtf1"), "Should contain RTF header")
         XCTAssertTrue(content.contains("Hello World"), "Should contain original text")
         XCTAssertTrue(content.contains("\\par"), "Should contain RTF paragraph breaks")
@@ -52,7 +52,7 @@ final class DocumentExportServiceTests: XCTestCase {
         let testText = "Text with {braces} and \\backslashes\\"
         
         let resultURL = try sut.exportDocument(from: testText, format: .rtf)
-        let content = try String(contentsOf: resultURL)
+        let content = try String(contentsOf: resultURL, encoding: .utf8)
         
         XCTAssertTrue(content.contains("\\{braces\\}"), "Should escape braces")
         XCTAssertTrue(content.contains("\\\\backslashes\\\\"), "Should escape backslashes")
@@ -68,7 +68,7 @@ final class DocumentExportServiceTests: XCTestCase {
         XCTAssertTrue(FileManager.default.fileExists(atPath: resultURL.path), "DOCX file should be created")
         XCTAssertEqual(resultURL.pathExtension, "docx", "File should have .docx extension")
         
-        let content = try String(contentsOf: resultURL)
+        let content = try String(contentsOf: resultURL, encoding: .utf8)
         XCTAssertTrue(content.contains("<?xml"), "Should contain XML header")
         XCTAssertTrue(content.contains("w:document"), "Should contain Word document structure")
         XCTAssertTrue(content.contains("Hello World"), "Should contain original text")
@@ -78,7 +78,7 @@ final class DocumentExportServiceTests: XCTestCase {
         let testText = "Text with <tags> & \"quotes\" and 'apostrophes'"
         
         let resultURL = try sut.exportDocument(from: testText, format: .docx)
-        let content = try String(contentsOf: resultURL)
+        let content = try String(contentsOf: resultURL, encoding: .utf8)
         
         XCTAssertTrue(content.contains("&lt;tags&gt;"), "Should escape < and >")
         XCTAssertTrue(content.contains("&amp;"), "Should escape &")
@@ -96,7 +96,7 @@ final class DocumentExportServiceTests: XCTestCase {
         XCTAssertTrue(FileManager.default.fileExists(atPath: resultURL.path), "TXT file should be created")
         XCTAssertEqual(resultURL.pathExtension, "txt", "File should have .txt extension")
         
-        let content = try String(contentsOf: resultURL)
+        let content = try String(contentsOf: resultURL, encoding: .utf8)
         XCTAssertEqual(content, testText, "TXT content should match original text exactly")
     }
     
@@ -147,7 +147,7 @@ final class DocumentExportServiceTests: XCTestCase {
         
         XCTAssertTrue(FileManager.default.fileExists(atPath: resultURL.path), "Should create file even for empty text")
         
-        let content = try String(contentsOf: resultURL)
+        let content = try String(contentsOf: resultURL, encoding: .utf8)
         XCTAssertTrue(content.contains("{\\rtf1"), "Should still contain RTF structure")
     }
     
@@ -155,7 +155,7 @@ final class DocumentExportServiceTests: XCTestCase {
         let whitespaceText = "   \n\t  \n  "
         
         let resultURL = try sut.exportDocument(from: whitespaceText, format: .docx)
-        let content = try String(contentsOf: resultURL)
+        let content = try String(contentsOf: resultURL, encoding: .utf8)
         
         XCTAssertTrue(content.contains("w:document"), "Should contain document structure")
         // Should handle whitespace-only content gracefully
@@ -170,7 +170,7 @@ final class DocumentExportServiceTests: XCTestCase {
         
         XCTAssertTrue(FileManager.default.fileExists(atPath: resultURL.path), "Should handle large content")
         
-        let content = try String(contentsOf: resultURL)
+        let content = try String(contentsOf: resultURL, encoding: .utf8)
         XCTAssertTrue(content.count > largeText.count, "RTF content should be larger due to formatting")
     }
 }

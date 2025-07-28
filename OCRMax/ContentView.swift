@@ -21,7 +21,7 @@ struct ContentView: View {
             
             LibraryView()
                 .tabItem {
-                    Image(systemName: "doc.stack")
+                    Image(systemName: "folder.fill")
                     Text("Library")
                 }
                 .tag(1)

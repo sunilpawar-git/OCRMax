@@ -72,8 +72,8 @@ final class OCRViewModel: ObservableObject {
     func processPDF(url: URL) {
         guard !isProcessing else { return }
         
-        selectedPDFURL = url
         resetState()
+        selectedPDFURL = url
         
         Task {
             if await shouldProceedWithLargeFile(url: url) {
@@ -96,8 +96,8 @@ final class OCRViewModel: ObservableObject {
     func processImageFile(url: URL) {
         guard !isProcessing else { return }
         
-        selectedPDFURL = url
         resetState()
+        selectedPDFURL = url
         
         Task {
             await loadAndProcessImageFile(url: url)
@@ -185,7 +185,7 @@ final class OCRViewModel: ObservableObject {
     }
     
     func processImages() async {
-        await processImages(capturedImages)
+        processImages(capturedImages)
     }
     
     func resetState() {

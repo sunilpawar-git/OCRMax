@@ -160,9 +160,11 @@ final class VisionOCRServiceTests: XCTestCase {
         // This test verifies that the service properly wraps Vision framework errors
         do {
             _ = try await sut.recognizeText(from: testImage)
-        } catch {
-            // Any error is acceptable - we're testing error handling path
-            XCTAssertTrue(error is OCRError || error is NSError, "Should handle errors appropriately")
+        } catch let error {
+            let isOCRError = error as? OCRError != nil
+            let nsError = error as NSError
+            let isVisionError = nsError.domain == "VNErrorDomain"
+            XCTAssert(isOCRError || isVisionError, "Should handle errors appropriately")
         }
     }
 }

@@ -100,7 +100,7 @@ final class OCRIntegrationTests: XCTestCase {
             // Verify export results
             XCTAssertTrue(FileManager.default.fileExists(atPath: exportedURL.path), "Exported file should exist")
             
-            let exportedContent = try String(contentsOf: exportedURL)
+            let exportedContent = try String(contentsOf: exportedURL, encoding: .utf8)
             XCTAssertTrue(exportedContent.contains("{\\rtf1"), "Should be valid RTF format")
             
             // Cleanup
@@ -142,7 +142,7 @@ final class OCRIntegrationTests: XCTestCase {
         let rtfURL = try documentExporter.exportDocument(from: testText, format: .rtf)
         defer { try? FileManager.default.removeItem(at: rtfURL) }
         
-        let rtfContent = try String(contentsOf: rtfURL)
+        let rtfContent = try String(contentsOf: rtfURL, encoding: .utf8)
         XCTAssertTrue(rtfContent.contains("{\\rtf1"), "Should contain RTF header")
         XCTAssertTrue(rtfContent.contains("Multi-line test document"), "Should contain original text")
         
@@ -150,7 +150,7 @@ final class OCRIntegrationTests: XCTestCase {
         let docxURL = try documentExporter.exportDocument(from: testText, format: .docx)
         defer { try? FileManager.default.removeItem(at: docxURL) }
         
-        let docxContent = try String(contentsOf: docxURL)
+        let docxContent = try String(contentsOf: docxURL, encoding: .utf8)
         XCTAssertTrue(docxContent.contains("<?xml"), "Should contain XML header")
         XCTAssertTrue(docxContent.contains("w:document"), "Should contain Word document structure")
         
@@ -158,7 +158,7 @@ final class OCRIntegrationTests: XCTestCase {
         let txtURL = try documentExporter.exportDocument(from: testText, format: .txt)
         defer { try? FileManager.default.removeItem(at: txtURL) }
         
-        let txtContent = try String(contentsOf: txtURL)
+        let txtContent = try String(contentsOf: txtURL, encoding: .utf8)
         XCTAssertEqual(txtContent, testText, "TXT content should match exactly")
     }
     
@@ -176,8 +176,11 @@ final class OCRIntegrationTests: XCTestCase {
         do {
             _ = try await ocrService.recognizeText(from: invalidImage)
             XCTFail("Should throw error for invalid image")
-        } catch {
-            XCTAssertTrue(error is OCRError || error is NSError, "Should handle invalid image error")
+        } catch let error {
+            let isOCRError = error as? OCRError != nil
+            let nsError = error as NSError
+            let isVisionError = nsError.domain == "VNErrorDomain"
+            XCTAssert(isOCRError || isVisionError, "Should handle invalid image error with OCRError or Vision error")
         }
     }
     
