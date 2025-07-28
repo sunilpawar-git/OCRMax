@@ -36,38 +36,53 @@ xcodebuild test -project OCRMax.xcodeproj -scheme OCRMax -destination 'platform=
 
 ## Architecture Overview
 
-The codebase follows **MVVM architecture with SOLID principles**:
+The codebase follows **MVVM architecture with SOLID principles** and implements a comprehensive OCR formatting enhancement system with subscription-based premium features:
 
 ### Core Architecture Layers
 
 1. **Model Layer (Protocols & Services)**
-   - `Protocols/OCRServiceProtocol.swift` - OCR service abstraction
-   - `Services/VisionOCRService.swift` - Apple Vision OCR implementation
+   - `Protocols/OCRServiceProtocol.swift` - OCR service abstraction with enhanced spatial capabilities
+   - `Models/TextBlock.swift` - Positioned text data structure for spatial analysis
+   - `Services/VisionOCRService.swift` - Apple Vision OCR implementation  
+   - `Services/EnhancedVisionOCRService.swift` - Vision OCR with bounding box extraction
    - `Services/PDFProcessingService.swift` - PDF parsing and image extraction
-   - `Services/DocumentExportService.swift` - Document export (RTF, DOCX, TXT)
+   - `Services/DocumentExportService.swift` - Document export with spatial formatting (RTF, DOCX, TXT)
+   - `Services/LayoutAnalyzer.swift` - Intelligent document structure analysis
+   - `Services/SubscriptionManager.swift` - StoreKit integration for premium features
+   - `Services/AIFormattingService.swift` - OpenAI API integration for AI-enhanced formatting
 
 2. **ViewModel Layer**
-   - `ViewModels/OCRViewModel.swift` - Main business logic coordinator
+   - `ViewModels/OCRViewModel.swift` - Main business logic coordinator with premium feature integration
+   - `ViewModels/FormattingOptionsViewModel.swift` - Premium UI management for formatting selection
    - Manages UI state with `@Published` properties
    - Coordinates between services via dependency injection
    - Handles async operations and error states
 
 3. **View Layer**
-   - `ContentView.swift` - SwiftUI main interface
-   - Reactive bindings to ViewModel
+   - `ContentView.swift` - SwiftUI main interface with premium feature access
+   - `Views/` - Additional UI components (LibraryView, SettingsView, etc.)
+   - Reactive bindings to ViewModels
    - No business logic
 
 ### Key Design Patterns
 
-**Dependency Injection**: ViewModel accepts protocol dependencies, enabling easy testing and extensibility:
+**Dependency Injection**: ViewModels accept protocol dependencies, enabling easy testing and extensibility:
 ```swift
-init(visionOCRService: VisionOCRService = VisionOCRService(),
-     tesseractOCRService: TesseractOCRService = TesseractOCRService(),
-     pdfProcessor: PDFProcessorProtocol = PDFProcessingService(),
-     documentExporter: DocumentExporterProtocol = DocumentExportService())
+init(visionOCRService: OCRServiceProtocol = VisionOCRService(),
+     enhancedVisionOCRService: EnhancedOCRServiceProtocol = EnhancedVisionOCRService(),
+     layoutAnalyzer: LayoutAnalyzerProtocol = LayoutAnalyzer(),
+     subscriptionManager: SubscriptionManagerProtocol = SubscriptionManager(),
+     aiFormattingService: AIFormattingServiceProtocol = AIFormattingService())
 ```
 
 **Protocol-Based Design**: All services implement protocols for substitutability and testing.
+
+**Premium Feature Architecture**: Three-tier subscription model (Free, Pro $4.99, Pro+ $9.99) with feature gating:
+- **Free**: Basic OCR text extraction
+- **Pro**: Enhanced layout preservation with spatial analysis  
+- **Pro+**: AI-powered intelligent formatting via OpenAI API
+
+**Spatial Text Analysis**: `TextBlock` model captures positioning data from Apple Vision for intelligent document structure detection.
 
 **Batch Processing**: Large PDFs (>100 pages) automatically use memory-efficient batch processing to prevent iOS memory termination.
 
@@ -99,10 +114,15 @@ The following files exist for backward compatibility but are superseded by the n
 ### OCR Processing Flow
 1. **File Validation**: Check file size and page count with user warnings for large files
 2. **Processing Mode Selection**: Automatic choice between standard (<100 pages) and batch processing (>100 pages)
-3. **PDF → Image Extraction**: Via `PDFProcessingService` with memory-efficient batch loading
-4. **Images → Text Recognition**: Via `VisionOCRService` or `TesseractOCRService` 
-5. **Text → Document Export**: Via `DocumentExportService` with streaming for large files
-6. **Progress Reporting**: Real-time updates through callback handlers
+3. **Formatting Level Selection**: User chooses between Basic (free), Enhanced (Pro), or AI-Enhanced (Pro+)
+4. **PDF → Image Extraction**: Via `PDFProcessingService` with memory-efficient batch loading
+5. **Images → Text Recognition**: 
+   - Basic: Via `VisionOCRService` or `TesseractOCRService`
+   - Enhanced/AI: Via `EnhancedVisionOCRService` with spatial positioning
+6. **Layout Analysis**: Via `LayoutAnalyzer` for enhanced/AI formatting (columns, headers, spacing)
+7. **AI Enhancement**: Via `AIFormattingService` for Pro+ users with cost estimation
+8. **Text → Document Export**: Via `DocumentExportService` with spatial formatting preservation
+9. **Progress Reporting**: Real-time updates through callback handlers
 
 ### Large PDF Support
 - **Batch Size**: Adaptive (10-50 pages) based on total document size
@@ -114,24 +134,30 @@ The following files exist for backward compatibility but are superseded by the n
 - **RTF**: Primary format for Word compatibility with streaming export for large files
 - **DOCX**: XML-based Word format with chunked processing
 - **TXT**: Plain text fallback with efficient memory usage
+- **Spatial Formatting**: Enhanced exports preserve document structure (headers, columns, spacing) via `LayoutAnalysis`
 
 ### Error Handling Strategy
 - `OCRError` enum covers all domain-specific errors
 - ViewModel centralizes error state management
 - UI displays user-friendly error messages
 
+### Premium Feature Integration
+- **Subscription Tiers**: Defined in `SubscriptionTier` enum with StoreKit integration
+- **Feature Gating**: `SubscriptionManager.canUseFeature(_:)` controls access to premium functionality
+- **Cost Estimation**: AI formatting includes cost estimation and user warnings via `AIFormattingService.estimatedCost(for:)`
+
 ## Extension Points
 
 ### Adding New OCR Engine
-Implement `OCRServiceProtocol` and add to ViewModel's OCREngine enum:
+Implement `OCRServiceProtocol` or `EnhancedOCRServiceProtocol` and add to ViewModel's OCREngine enum:
 ```swift
-class CustomOCRService: OCRServiceProtocol {
+class CustomOCRService: EnhancedOCRServiceProtocol {
     func recognizeText(from image: UIImage) async throws -> String {
-        // Implementation
+        // Basic OCR implementation
     }
     
-    func recognizeText(from images: [UIImage], progressHandler: @escaping (String) -> Void) async throws -> String {
-        // Batch implementation for large documents
+    func recognizeTextBlocks(from image: UIImage) async throws -> [TextBlock] {
+        // Enhanced OCR with spatial positioning
     }
 }
 ```
@@ -139,7 +165,13 @@ class CustomOCRService: OCRServiceProtocol {
 ### Adding New Export Format
 1. Extend `DocumentFormat` enum in `OCRServiceProtocol.swift`
 2. Add format handling in `DocumentExportService.createDocumentContent()`
-3. Add streaming export case in `exportLargeDocument()` for large files
+3. Add spatial formatting support in `createStructuredDocumentContent()`
+4. Add streaming export case in `exportLargeDocument()` for large files
+
+### Adding New Premium Feature
+1. Add to `PremiumFeature` enum in `OCRServiceProtocol.swift`
+2. Update `SubscriptionManager.canUseFeature(_:)` logic
+3. Add feature gating in relevant ViewModels
 
 ### Core Data Integration
 - `Persistence.swift` provides Core Data stack
@@ -165,13 +197,12 @@ class CustomOCRService: OCRServiceProtocol {
 
 ## Development Guidelines
 
-- No more than 300 lines per file
-- Always test large file scenarios when modifying PDF processing
-- Use batch processing patterns for any operations that scale with document size
-- Ensure proper memory cleanup in all image processing operations
-
-## Development Best Practices
-
-- Write test first, then add code later
-- Test memory usage with large PDFs during development
-- Always handle file access errors gracefully with user-friendly messages
+- **300-Line Rule**: No more than 300 lines per file for maintainability
+- **Test-Driven Development**: Write tests first, then implement functionality  
+- **Mock-Based Testing**: Use `OCRMaxTests/Mocks/` for dependency injection in tests
+- **MainActor Usage**: ViewModels are `@MainActor` - ensure tests handle this properly
+- **Protocol Conformance**: Update mock implementations when adding protocol methods
+- **Premium Feature Testing**: Test both free and premium user scenarios
+- **Large File Testing**: Always test large file scenarios when modifying PDF processing
+- **Memory Management**: Use batch processing patterns for operations that scale with document size
+- **Security-Scoped Resources**: Properly wrap PDF access with `startAccessingSecurityScopedResource()`
