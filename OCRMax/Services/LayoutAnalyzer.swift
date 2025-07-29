@@ -134,7 +134,7 @@ final class LayoutAnalyzer: LayoutAnalyzerProtocol {
     }
     
     private func determineGroupType(for blocks: [TextBlock], at rowIndex: Int, spacing: SpacingInfo) -> TextGroupType {
-        guard let firstBlock = blocks.first else { return .paragraph }
+        guard !blocks.isEmpty else { return .paragraph }
         
         let text = blocks.map { $0.text }.joined(separator: " ")
         let averageHeight = blocks.reduce(0) { $0 + $1.height } / CGFloat(blocks.count)
