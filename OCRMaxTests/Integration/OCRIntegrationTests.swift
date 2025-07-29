@@ -217,11 +217,7 @@ final class OCRIntegrationTests: XCTestCase {
     
     @MainActor
     func testViewModelIntegration() async {
-        let viewModel = OCRViewModel(
-            visionOCRService: ocrService,
-            pdfProcessor: pdfProcessor,
-            documentExporter: documentExporter
-        )
+        let viewModel = OCRViewModel()
         
         // Test initial state
         XCTAssertFalse(viewModel.isProcessing)

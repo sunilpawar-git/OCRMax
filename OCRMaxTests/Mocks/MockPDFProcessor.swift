@@ -17,8 +17,10 @@ final class MockPDFProcessor: PDFProcessorProtocol {
     var mockText = "Sample PDF text"
     var mockError = OCRError.unsupportedFormat
     var extractImagesCallCount = 0
+    var extractImagesBatchCallCount = 0
     var getPageCountCallCount = 0
     var extractTextCallCount = 0
+    var useBatchProcessor = false
     
     init() {
         setupMockImages()
@@ -35,7 +37,7 @@ final class MockPDFProcessor: PDFProcessorProtocol {
     }
     
     func extractImagesBatch(from url: URL, batchSize: Int, batchHandler: @escaping ([UIImage], Int, Int) throws -> Void) throws {
-        extractImagesCallCount += 1
+        extractImagesBatchCallCount += 1
         
         if shouldSucceed {
             let totalPages = mockImages.count
@@ -94,8 +96,10 @@ final class MockPDFProcessor: PDFProcessorProtocol {
         mockText = "Sample PDF text"
         mockError = OCRError.unsupportedFormat
         extractImagesCallCount = 0
+        extractImagesBatchCallCount = 0
         getPageCountCallCount = 0
         extractTextCallCount = 0
+        useBatchProcessor = false
         setupMockImages()
     }
 }
