@@ -77,21 +77,26 @@
 
 ## 🧪 Phase 5: Testing & Quality Assurance (Week 9)
 
-### Missing Test Coverage
-- [ ] Create `EnhancedVisionOCRServiceTests.swift`
-- [ ] Create `LayoutAnalyzerTests.swift`
-- [ ] Create `SubscriptionManagerTests.swift`
-- [ ] Create `AIFormattingServiceTests.swift`
-- [ ] Create `OCRProcessingViewModelTests.swift`
-- [ ] Create `SubscriptionViewModelTests.swift`
-- [ ] Create `DocumentLibraryViewModelTests.swift`
-- [ ] Create `BatchProcessingIntegrationTests.swift`
+### Fix Failing Tests (Phase 4 Breaking Changes)
+- [ ] Fix `MockSubscriptionManager.swift` - add missing `restorePurchases()` method
+- [ ] Update `MockSubscriptionManager.swift` subscription tier logic (free/premium only)
+- [ ] Fix `FormattingOptionsViewModelTests.swift` - update for simplified subscription model
+- [ ] Fix `OCRViewModelTests.swift` - update for new delegated property architecture
+- [ ] Fix `SubscriptionManagerTests.swift` - remove .pro/.proPlus references
+- [ ] Fix `AIFormattingServiceTests.swift` - update for simplified subscription tiers
+- [ ] Remove obsolete test cases that reference deleted features
 
-### Memory Testing
-- [ ] Add memory pressure tests
-- [ ] Test large PDF processing (500+ pages)
-- [ ] Verify memory usage stays under limits
-- [ ] Add performance benchmarks
+### Missing Test Coverage (New Architecture Components)
+- [ ] Create `OCRProcessingViewModelTests.swift` (new ViewModel from Phase 3)
+- [ ] Create `SubscriptionViewModelTests.swift` (new ViewModel from Phase 3)
+- [ ] Create `DocumentLibraryViewModelTests.swift` (new ViewModel from Phase 3)
+- [ ] Create `BatchProcessingIntegrationTests.swift` (new feature from Phase 4)
+
+### Memory Testing & Performance
+- [ ] Add memory pressure tests for large file processing
+- [ ] Test large PDF processing (500+ pages) with batch processing
+- [ ] Verify memory usage stays under iOS limits during OCR operations
+- [ ] Add performance benchmarks for batch size optimization
 
 ## 🚀 Phase 6: Advanced Features (Week 10-12)
 
@@ -145,7 +150,7 @@
 
 ---
 
-**Progress Tracking:** 52/90 tasks completed (58% complete)
+**Progress Tracking:** 52/93 tasks completed (56% complete)
 
 **Phases Complete:** ✅ Phase 1, ✅ Phase 2, ✅ Phase 3, ✅ Phase 4
 
