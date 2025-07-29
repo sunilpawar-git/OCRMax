@@ -51,6 +51,7 @@ protocol SubscriptionManagerProtocol {
     func checkSubscriptionStatus() async
     func canUseFeature(_ feature: PremiumFeature) -> Bool
     func requestPurchase(for tier: SubscriptionTier) async throws -> Bool
+    func restorePurchases() async throws -> Bool
 }
 
 protocol AIFormattingServiceProtocol {

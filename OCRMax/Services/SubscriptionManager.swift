@@ -109,15 +109,15 @@ final class SubscriptionManager: SubscriptionManagerProtocol, ObservableObject {
         }
     }
     
-    // MARK: - Public Methods
-    
-    func restorePurchases() async throws {
+    func restorePurchases() async throws -> Bool {
         isLoading = true
         defer { isLoading = false }
         
         let tier = try await storeKitService.restorePurchases()
+        let wasRestored = tier != .free
         await updateSubscriptionTier(tier)
         cacheSubscriptionStatus()
+        return wasRestored
     }
     
     func getFeatureList(for tier: SubscriptionTier) -> [PremiumFeature] {
