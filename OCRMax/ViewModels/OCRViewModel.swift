@@ -117,7 +117,7 @@ final class OCRViewModel: ObservableObject {
                 if success {
                     showingSubscriptionUpgrade = false
                     // Refresh available formatting options
-                    await checkSubscriptionStatus()
+                    checkSubscriptionStatus()
                 }
             } catch {
                 handleError(error)

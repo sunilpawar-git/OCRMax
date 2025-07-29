@@ -66,7 +66,7 @@ final class SubscriptionManager: SubscriptionManagerProtocol, ObservableObject {
             
             do {
                 let tier = try await storeKitService.checkSubscriptionStatus()
-                await updateSubscriptionTier(tier)
+                updateSubscriptionTier(tier)
                 lastStatusCheck = Date()
                 cacheSubscriptionStatus()
             } catch {
