@@ -145,6 +145,7 @@ final class AIFormattingServiceTests: XCTestCase {
     
     func testEmptyResponseHandling() async {
         mockSubscriptionManager.mockCurrentTier = .premium
+        mockAPIClient.isOnline = true
         mockAPIClient.mockResponse = ""
         
         do {
@@ -154,7 +155,7 @@ final class AIFormattingServiceTests: XCTestCase {
             )
             XCTFail("Should have thrown processing failed error")
         } catch OCRError.processingFailed {
-            // Expected behavior
+            // Expected behavior - empty response should trigger processing failed
         } catch {
             XCTFail("Wrong error type: \(error)")
         }

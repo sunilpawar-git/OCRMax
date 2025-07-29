@@ -48,7 +48,6 @@ class MockAIAPIClient: AIAPIClientProtocol {
         
         // Return empty response instead of throwing error
         // The service will handle empty responses appropriately
-        
         return mockResponse
     }
     

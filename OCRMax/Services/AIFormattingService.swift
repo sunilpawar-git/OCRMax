@@ -62,6 +62,8 @@ final class AIFormattingService: AIFormattingServiceProtocol {
             throw OCRError.aiServiceUnavailable
         } catch APIError.rateLimited {
             throw OCRError.aiServiceUnavailable
+        } catch OCRError.processingFailed {
+            throw OCRError.processingFailed
         } catch {
             throw OCRError.aiServiceUnavailable
         }
