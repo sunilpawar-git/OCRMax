@@ -153,10 +153,8 @@ extension SubscriptionViewModel {
         switch currentTier {
         case .free:
             return "Free Plan"
-        case .pro:
-            return "Pro Plan - Enhanced Features"
-        case .proPlus:
-            return "Pro+ Plan - AI-Powered Features"
+        case .premium:
+            return "Premium Plan - All Features"
         }
     }
     
@@ -164,10 +162,8 @@ extension SubscriptionViewModel {
         switch currentTier {
         case .free:
             return ["Basic OCR processing", "Text extraction", "RTF export"]
-        case .pro:
-            return ["Enhanced layout analysis", "Spatial formatting", "Advanced export options", "Premium support"]
-        case .proPlus:
-            return ["AI-powered formatting", "Intelligent document analysis", "All Pro features", "Priority processing"]
+        case .premium:
+            return ["Enhanced layout analysis", "AI-powered formatting", "Spatial formatting", "Advanced export options", "Premium support"]
         }
     }
 }

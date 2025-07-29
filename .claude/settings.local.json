@@ -12,7 +12,8 @@
       "WebFetch(domain:github.com)",
       "Bash(git pull:*)",
       "Bash(git stash:*)",
-      "Bash(rm:*)"
+      "Bash(rm:*)",
+      "mcp__ide__getDiagnostics"
     ],
     "deny": []
   }

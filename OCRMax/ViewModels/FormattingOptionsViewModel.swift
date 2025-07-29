@@ -130,10 +130,8 @@ final class FormattingOptionsViewModel: ObservableObject {
         switch level {
         case .basic:
             return nil
-        case .enhanced:
-            return .pro
-        case .aiEnhanced:
-            return .proPlus
+        case .enhanced, .aiEnhanced:
+            return .premium
         }
     }
     
@@ -200,9 +198,9 @@ extension FormattingLevel {
         case .basic:
             return "Extracts text as-is without formatting preservation. Free for all users."
         case .enhanced:
-            return "Analyzes document structure to preserve headers, paragraphs, columns, and spacing. Requires Pro subscription."
+            return "Analyzes document structure to preserve headers, paragraphs, columns, and spacing. Requires Premium subscription."
         case .aiEnhanced:
-            return "Uses AI to intelligently format text with proper structure, styling, and layout optimization. Requires Pro+ subscription and incurs API costs."
+            return "Uses AI to intelligently format text with proper structure, styling, and layout optimization. Requires Premium subscription and incurs API costs."
         }
     }
     

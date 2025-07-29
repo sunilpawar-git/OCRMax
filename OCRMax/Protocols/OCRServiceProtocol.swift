@@ -95,31 +95,26 @@ enum FormattingLevel: String, CaseIterable {
 
 enum SubscriptionTier: String, CaseIterable {
     case free = "free"
-    case pro = "pro"
-    case proPlus = "pro_plus"
+    case premium = "premium"
     
     var displayName: String {
         switch self {
         case .free: return "Free"
-        case .pro: return "Pro"
-        case .proPlus: return "Pro+"
+        case .premium: return "Premium"
         }
     }
     
     var monthlyPrice: Double {
         switch self {
         case .free: return 0.0
-        case .pro: return 4.99
-        case .proPlus: return 9.99
+        case .premium: return 4.99
         }
     }
 }
 
 enum PremiumFeature: String, CaseIterable {
-    case aiFormatting = "ai_formatting"
     case enhancedLayout = "enhanced_layout"
-    case batchProcessing = "batch_processing"
-    case prioritySupport = "priority_support"
+    case aiFormatting = "ai_formatting"
 }
 
 struct LayoutAnalysis {

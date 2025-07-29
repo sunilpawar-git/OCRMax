@@ -82,10 +82,8 @@ final class SubscriptionManager: SubscriptionManagerProtocol, ObservableObject {
         switch currentTier {
         case .free:
             return false
-        case .pro:
-            return [.aiFormatting, .enhancedLayout].contains(feature)
-        case .proPlus:
-            return true // All features available
+        case .premium:
+            return true // All premium features available
         }
     }
     
@@ -124,9 +122,7 @@ final class SubscriptionManager: SubscriptionManagerProtocol, ObservableObject {
         switch tier {
         case .free:
             return []
-        case .pro:
-            return [.aiFormatting, .enhancedLayout]
-        case .proPlus:
+        case .premium:
             return PremiumFeature.allCases
         }
     }
@@ -173,8 +169,7 @@ protocol StoreKitServiceProtocol {
 final class StoreKitService: StoreKitServiceProtocol {
     
     private let productIdentifiers: [SubscriptionTier: String] = [
-        .pro: "com.ocrmax.pro.monthly",
-        .proPlus: "com.ocrmax.proplus.monthly"
+        .premium: "com.ocrmax.premium.monthly"
     ]
     
     func checkSubscriptionStatus() async throws -> SubscriptionTier {

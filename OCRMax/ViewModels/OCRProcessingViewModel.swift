@@ -308,9 +308,29 @@ final class OCRProcessingViewModel: ObservableObject {
         }
     }
     
+    private func calculateOptimalBatchSize(for pageCount: Int) -> Int {
+        // Base calculation on available memory and page count
+        let availableMemory = ProcessInfo.processInfo.physicalMemory
+        let estimatedMemoryPerPage: UInt64 = 10_000_000 // ~10MB per page estimate
+        
+        // Calculate theoretical max pages based on available memory (use 50% of total)
+        let memoryBasedLimit = Int((availableMemory / 2) / estimatedMemoryPerPage)
+        let memoryBasedBatchSize = max(5, min(memoryBasedLimit, 50))
+        
+        // Adjust based on total page count
+        let countBasedBatchSize = max(10, min(pageCount / 10, 30))
+        
+        // Use the more conservative estimate
+        let optimalBatchSize = min(memoryBasedBatchSize, countBasedBatchSize)
+        
+        print("OCR Batch Processing: pageCount=\(pageCount), memoryBasedSize=\(memoryBasedBatchSize), countBasedSize=\(countBasedBatchSize), optimal=\(optimalBatchSize)")
+        
+        return optimalBatchSize
+    }
+    
     private func performBatchOCRProcessing(url: URL, pageCount: Int) async {
         var allExtractedText = ""
-        let batchSize = min(20, max(10, pageCount / 50))
+        let batchSize = calculateOptimalBatchSize(for: pageCount)
         
         do {
             if selectedOCREngine == .tesseract {
@@ -320,15 +340,17 @@ final class OCRProcessingViewModel: ObservableObject {
             let totalBatches = (pageCount + batchSize - 1) / batchSize
             
             for batchIndex in 0..<totalBatches {
-                progressText = "Processing batch \(batchIndex + 1) of \(totalBatches)..."
-                
                 let startPage = batchIndex * batchSize
                 let endPage = min(startPage + batchSize, pageCount)
+                let batchProgress = Int((Double(batchIndex) / Double(totalBatches)) * 100)
+                
+                progressText = "Processing batch \(batchIndex + 1) of \(totalBatches) (\(batchProgress)% complete) - Pages \(startPage + 1) to \(endPage)"
+                
                 let batchImages = try await extractBatchImages(from: url, startPage: startPage, endPage: endPage)
                 
                 let batchText = try await currentOCRService.recognizeText(from: batchImages) { [weak self] progress in
                     Task { @MainActor in
-                        self?.progressText = "Batch \(batchIndex + 1)/\(totalBatches): \(progress)"
+                        self?.progressText = "Batch \(batchIndex + 1)/\(totalBatches) (\(batchProgress)%): \(progress)"
                     }
                 }
                 
