@@ -33,22 +33,13 @@ final class SubscriptionManagerTests: XCTestCase {
         XCTAssertEqual(subscriptionManager.currentTier, .free)
     }
     
-    func testProSubscriptionStatus() async {
-        mockStoreKit.mockSubscriptionStatus = .pro
+    func testPremiumSubscriptionStatus() async {
+        mockStoreKit.mockSubscriptionStatus = .premium
         
         await subscriptionManager.checkSubscriptionStatus()
         
         XCTAssertTrue(subscriptionManager.isPremiumUser)
-        XCTAssertEqual(subscriptionManager.currentTier, .pro)
-    }
-    
-    func testProPlusSubscriptionStatus() async {
-        mockStoreKit.mockSubscriptionStatus = .proPlus
-        
-        await subscriptionManager.checkSubscriptionStatus()
-        
-        XCTAssertTrue(subscriptionManager.isPremiumUser)
-        XCTAssertEqual(subscriptionManager.currentTier, .proPlus)
+        XCTAssertEqual(subscriptionManager.currentTier, .premium)
     }
     
     func testExpiredSubscriptionHandling() async {
@@ -68,50 +59,26 @@ final class SubscriptionManagerTests: XCTestCase {
         
         XCTAssertFalse(subscriptionManager.canUseFeature(.aiFormatting))
         XCTAssertFalse(subscriptionManager.canUseFeature(.enhancedLayout))
-        XCTAssertFalse(subscriptionManager.canUseFeature(.batchProcessing))
-        XCTAssertFalse(subscriptionManager.canUseFeature(.prioritySupport))
     }
     
-    func testProUserFeatureAccess() {
-        subscriptionManager = SubscriptionManager(currentTier: .pro)
+    func testPremiumUserFeatureAccess() {
+        subscriptionManager = SubscriptionManager(currentTier: .premium)
         
         XCTAssertTrue(subscriptionManager.canUseFeature(.aiFormatting))
         XCTAssertTrue(subscriptionManager.canUseFeature(.enhancedLayout))
-        XCTAssertFalse(subscriptionManager.canUseFeature(.batchProcessing))
-        XCTAssertFalse(subscriptionManager.canUseFeature(.prioritySupport))
-    }
-    
-    func testProPlusUserFeatureAccess() {
-        subscriptionManager = SubscriptionManager(currentTier: .proPlus)
-        
-        XCTAssertTrue(subscriptionManager.canUseFeature(.aiFormatting))
-        XCTAssertTrue(subscriptionManager.canUseFeature(.enhancedLayout))
-        XCTAssertTrue(subscriptionManager.canUseFeature(.batchProcessing))
-        XCTAssertTrue(subscriptionManager.canUseFeature(.prioritySupport))
     }
     
     // MARK: - Purchase Flow Tests
     
-    func testSuccessfulProPurchase() async throws {
+    func testSuccessfulPremiumPurchase() async throws {
         mockStoreKit.shouldSucceedPurchase = true
-        mockStoreKit.mockSubscriptionStatus = .pro
+        mockStoreKit.mockSubscriptionStatus = .premium
         
-        let success = try await subscriptionManager.requestPurchase(for: .pro)
+        let success = try await subscriptionManager.requestPurchase(for: .premium)
         
         XCTAssertTrue(success)
         XCTAssertTrue(mockStoreKit.purchaseRequested)
-        XCTAssertEqual(mockStoreKit.requestedTier, .pro)
-    }
-    
-    func testSuccessfulProPlusPurchase() async throws {
-        mockStoreKit.shouldSucceedPurchase = true
-        mockStoreKit.mockSubscriptionStatus = .proPlus
-        
-        let success = try await subscriptionManager.requestPurchase(for: .proPlus)
-        
-        XCTAssertTrue(success)
-        XCTAssertTrue(mockStoreKit.purchaseRequested)
-        XCTAssertEqual(mockStoreKit.requestedTier, .proPlus)
+        XCTAssertEqual(mockStoreKit.requestedTier, .premium)
     }
     
     func testFailedPurchase() async {
@@ -119,7 +86,7 @@ final class SubscriptionManagerTests: XCTestCase {
         mockStoreKit.purchaseError = StoreKitError.paymentCancelled
         
         do {
-            _ = try await subscriptionManager.requestPurchase(for: .pro)
+            _ = try await subscriptionManager.requestPurchase(for: .premium)
             XCTFail("Should have thrown an error")
         } catch StoreKitError.paymentCancelled {
             // Expected behavior
@@ -134,13 +101,37 @@ final class SubscriptionManagerTests: XCTestCase {
         mockStoreKit.purchaseError = StoreKitError.userCancelled
         
         do {
-            _ = try await subscriptionManager.requestPurchase(for: .proPlus)
+            _ = try await subscriptionManager.requestPurchase(for: .premium)
             XCTFail("Should have thrown an error")
         } catch StoreKitError.userCancelled {
             // Expected behavior
         } catch {
             XCTFail("Wrong error type: \(error)")
         }
+    }
+    
+    // MARK: - Restore Purchases Tests
+    
+    func testSuccessfulRestorePurchases() async throws {
+        mockStoreKit.mockSubscriptionStatus = .premium
+        mockStoreKit.hasValidReceipt = true
+        
+        let success = try await subscriptionManager.restorePurchases()
+        
+        XCTAssertTrue(success)
+        XCTAssertTrue(subscriptionManager.isPremiumUser)
+        XCTAssertEqual(subscriptionManager.currentTier, .premium)
+    }
+    
+    func testFailedRestorePurchases() async throws {
+        mockStoreKit.mockSubscriptionStatus = .free
+        mockStoreKit.hasValidReceipt = false
+        
+        let success = try await subscriptionManager.restorePurchases()
+        
+        XCTAssertFalse(success)
+        XCTAssertFalse(subscriptionManager.isPremiumUser)
+        XCTAssertEqual(subscriptionManager.currentTier, .free)
     }
     
     // MARK: - Network Error Handling Tests
@@ -168,7 +159,7 @@ final class SubscriptionManagerTests: XCTestCase {
     
     func testReceiptValidation() async {
         mockStoreKit.hasValidReceipt = true
-        mockStoreKit.mockSubscriptionStatus = .pro
+        mockStoreKit.mockSubscriptionStatus = .premium
         
         await subscriptionManager.checkSubscriptionStatus()
         
@@ -178,7 +169,7 @@ final class SubscriptionManagerTests: XCTestCase {
     
     func testInvalidReceiptHandling() async {
         mockStoreKit.hasValidReceipt = false
-        mockStoreKit.mockSubscriptionStatus = .pro
+        mockStoreKit.mockSubscriptionStatus = .premium
         
         await subscriptionManager.checkSubscriptionStatus()
         
@@ -186,24 +177,12 @@ final class SubscriptionManagerTests: XCTestCase {
         XCTAssertEqual(subscriptionManager.currentTier, .free)
     }
     
-    // MARK: - Subscription Tier Upgrade/Downgrade Tests
-    
-    func testUpgradeFromProToProPlus() async throws {
-        subscriptionManager = SubscriptionManager(currentTier: .pro)
-        mockStoreKit.shouldSucceedPurchase = true
-        mockStoreKit.mockSubscriptionStatus = .proPlus
-        
-        let success = try await subscriptionManager.requestPurchase(for: .proPlus)
-        
-        XCTAssertTrue(success)
-        await subscriptionManager.checkSubscriptionStatus()
-        XCTAssertEqual(subscriptionManager.currentTier, .proPlus)
-    }
+    // MARK: - Subscription Downgrade Tests
     
     func testDowngradeHandling() async {
-        mockStoreKit.mockSubscriptionStatus = .pro
+        mockStoreKit.mockSubscriptionStatus = .premium
         await subscriptionManager.checkSubscriptionStatus()
-        XCTAssertEqual(subscriptionManager.currentTier, .pro)
+        XCTAssertEqual(subscriptionManager.currentTier, .premium)
         
         // Simulate subscription expiration
         mockStoreKit.mockSubscriptionStatus = .free
@@ -216,7 +195,7 @@ final class SubscriptionManagerTests: XCTestCase {
     // MARK: - Cache and Performance Tests
     
     func testSubscriptionStatusCaching() async {
-        mockStoreKit.mockSubscriptionStatus = .pro
+        mockStoreKit.mockSubscriptionStatus = .premium
         
         // First check should hit the network
         await subscriptionManager.checkSubscriptionStatus()
@@ -228,7 +207,7 @@ final class SubscriptionManagerTests: XCTestCase {
     }
     
     func testForcedRefresh() async {
-        mockStoreKit.mockSubscriptionStatus = .pro
+        mockStoreKit.mockSubscriptionStatus = .premium
         
         await subscriptionManager.checkSubscriptionStatus()
         await subscriptionManager.checkSubscriptionStatus(forceRefresh: true)
@@ -239,7 +218,7 @@ final class SubscriptionManagerTests: XCTestCase {
     // MARK: - Edge Cases Tests
     
     func testMultipleConcurrentStatusChecks() async {
-        mockStoreKit.mockSubscriptionStatus = .pro
+        mockStoreKit.mockSubscriptionStatus = .premium
         mockStoreKit.artificialDelay = 0.1 // Add small delay to simulate network
         
         // Start multiple concurrent status checks
@@ -260,5 +239,19 @@ final class SubscriptionManagerTests: XCTestCase {
         subscriptionManager = nil
         
         XCTAssertNil(weakManager, "SubscriptionManager should be deallocated")
+    }
+    
+    // MARK: - Feature List Tests
+    
+    func testFeatureListForFree() {
+        let features = subscriptionManager.getFeatureList(for: .free)
+        XCTAssertEqual(features.count, 0)
+    }
+    
+    func testFeatureListForPremium() {
+        let features = subscriptionManager.getFeatureList(for: .premium)
+        XCTAssertEqual(features.count, PremiumFeature.allCases.count)
+        XCTAssertTrue(features.contains(.aiFormatting))
+        XCTAssertTrue(features.contains(.enhancedLayout))
     }
 }

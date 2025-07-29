@@ -34,7 +34,7 @@ final class AIFormattingServiceTests: XCTestCase {
     // MARK: - Basic Functionality Tests
     
     func testBasicTextFormatting() async throws {
-        mockSubscriptionManager.mockCurrentTier = .pro
+        mockSubscriptionManager.mockCurrentTier = .premium
         mockAPIClient.mockResponse = "Properly formatted text with correct paragraphs and spacing."
         
         let inputText = "poorly formatted text without proper spacing"
@@ -48,7 +48,7 @@ final class AIFormattingServiceTests: XCTestCase {
     }
     
     func testComplexDocumentFormatting() async throws {
-        mockSubscriptionManager.mockCurrentTier = .proPlus
+        mockSubscriptionManager.mockCurrentTier = .premium
         mockAPIClient.mockResponse = """
         # Document Title
         
@@ -92,22 +92,9 @@ final class AIFormattingServiceTests: XCTestCase {
         }
     }
     
-    func testProUserAccess() async throws {
-        mockSubscriptionManager.mockCurrentTier = .pro
+    func testPremiumUserAccess() async throws {
+        mockSubscriptionManager.mockCurrentTier = .premium
         mockAPIClient.mockResponse = "formatted text"
-        
-        let result = try await aiFormattingService.enhanceFormatting(
-            text: "test", 
-            layoutHints: createBasicLayoutAnalysis()
-        )
-        
-        XCTAssertFalse(result.isEmpty)
-        XCTAssertTrue(mockAPIClient.requestSent)
-    }
-    
-    func testProPlusUserAccess() async throws {
-        mockSubscriptionManager.mockCurrentTier = .proPlus
-        mockAPIClient.mockResponse = "advanced formatted text"
         
         let result = try await aiFormattingService.enhanceFormatting(
             text: "test", 
@@ -121,7 +108,7 @@ final class AIFormattingServiceTests: XCTestCase {
     // MARK: - Error Handling Tests
     
     func testAPIServiceUnavailable() async {
-        mockSubscriptionManager.mockCurrentTier = .pro
+        mockSubscriptionManager.mockCurrentTier = .premium
         mockAPIClient.shouldFailRequest = true
         mockAPIClient.mockError = URLError(.notConnectedToInternet)
         
@@ -139,7 +126,7 @@ final class AIFormattingServiceTests: XCTestCase {
     }
     
     func testAPIRateLimitHandling() async {
-        mockSubscriptionManager.mockCurrentTier = .pro
+        mockSubscriptionManager.mockCurrentTier = .premium
         mockAPIClient.shouldFailRequest = true
         mockAPIClient.mockError = APIError.rateLimited
         
@@ -157,7 +144,7 @@ final class AIFormattingServiceTests: XCTestCase {
     }
     
     func testEmptyResponseHandling() async {
-        mockSubscriptionManager.mockCurrentTier = .pro
+        mockSubscriptionManager.mockCurrentTier = .premium
         mockAPIClient.mockResponse = ""
         
         do {
@@ -211,7 +198,7 @@ final class AIFormattingServiceTests: XCTestCase {
     // MARK: - Layout Hints Integration Tests
     
     func testHeaderDetectionIntegration() async throws {
-        mockSubscriptionManager.mockCurrentTier = .pro
+        mockSubscriptionManager.mockCurrentTier = .premium
         mockAPIClient.mockResponse = "# Formatted Header\n\nBody text follows."
         
         let layoutHints = createLayoutWithHeaders()
@@ -226,7 +213,7 @@ final class AIFormattingServiceTests: XCTestCase {
     }
     
     func testColumnLayoutIntegration() async throws {
-        mockSubscriptionManager.mockCurrentTier = .pro
+        mockSubscriptionManager.mockCurrentTier = .premium
         mockAPIClient.mockResponse = "Column 1 text | Column 2 text"
         
         let layoutHints = createLayoutWithColumns()
@@ -243,7 +230,7 @@ final class AIFormattingServiceTests: XCTestCase {
     // MARK: - Performance Tests
     
     func testLargeTextHandling() async throws {
-        mockSubscriptionManager.mockCurrentTier = .proPlus
+        mockSubscriptionManager.mockCurrentTier = .premium
         mockAPIClient.mockResponse = "Formatted large document"
         
         let largeText = String(repeating: "This is a sentence. ", count: 5000)

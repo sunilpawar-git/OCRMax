@@ -52,7 +52,7 @@ final class FormattingOptionsViewModelTests: XCTestCase {
     }
     
     func testSelectEnhancedFormattingWithPremium() {
-        mockSubscriptionManager.mockCurrentTier = .pro
+        mockSubscriptionManager.mockCurrentTier = .premium
         
         viewModel.selectFormattingLevel(.enhanced)
         
@@ -83,7 +83,7 @@ final class FormattingOptionsViewModelTests: XCTestCase {
     // MARK: - Premium Access Tests
     
     func testCanUseEnhancedFormatting() {
-        mockSubscriptionManager.mockCurrentTier = .pro
+        mockSubscriptionManager.mockCurrentTier = .premium
         
         XCTAssertTrue(viewModel.canUseEnhancedFormatting)
         
@@ -93,11 +93,11 @@ final class FormattingOptionsViewModelTests: XCTestCase {
     }
     
     func testCanUseAIFormatting() {
-        mockSubscriptionManager.mockCurrentTier = .proPlus
+        mockSubscriptionManager.mockCurrentTier = .premium
         
         XCTAssertTrue(viewModel.canUseAIFormatting)
         
-        mockSubscriptionManager.mockCurrentTier = .pro
+        mockSubscriptionManager.mockCurrentTier = .free
         
         XCTAssertFalse(viewModel.canUseAIFormatting)
     }
@@ -111,8 +111,8 @@ final class FormattingOptionsViewModelTests: XCTestCase {
     }
     
     func testSubscriptionTierForFeature() {
-        XCTAssertEqual(viewModel.subscriptionTierForFeature(.enhanced), .pro)
-        XCTAssertEqual(viewModel.subscriptionTierForFeature(.aiEnhanced), .proPlus)
+        XCTAssertEqual(viewModel.subscriptionTierForFeature(.enhanced), .premium)
+        XCTAssertEqual(viewModel.subscriptionTierForFeature(.aiEnhanced), .premium)
         XCTAssertNil(viewModel.subscriptionTierForFeature(.basic))
     }
 }
