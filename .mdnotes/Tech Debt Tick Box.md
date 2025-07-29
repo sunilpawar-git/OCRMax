@@ -3,38 +3,38 @@
 ## 🚨 Phase 1: Critical Infrastructure Repair (Week 1-2)
 
 ### Missing Service Implementations
-- [x] Create `OCRMax/Services/EnhancedVisionOCRService.swift`
-- [x] Create `OCRMax/Services/LayoutAnalyzer.swift`
-- [x] Create `OCRMax/Services/SubscriptionManager.swift`
-- [x] Create `OCRMax/Services/AIFormattingService.swift`
-- [x] Create `OCRMax/ViewModels/FormattingOptionsViewModel.swift`
-- [x] Verify app builds without compilation errors
+- [ ] Create `OCRMax/Services/EnhancedVisionOCRService.swift`
+- [ ] Create `OCRMax/Services/LayoutAnalyzer.swift`
+- [ ] Create `OCRMax/Services/SubscriptionManager.swift`
+- [ ] Create `OCRMax/Services/AIFormattingService.swift`
+- [ ] Create `OCRMax/ViewModels/FormattingOptionsViewModel.swift`
+- [ ] Verify app builds without compilation errors
 
 ### Memory Management Fix
-- [x] Update `PDFProcessingService.swift` with batch processing method
-- [x] Implement `extractImagesBatch()` function
-- [x] Add memory-efficient image handling
+- [ ] Update `PDFProcessingService.swift` with batch processing method
+- [ ] Implement `extractImagesBatch()` function
+- [ ] Add memory-efficient image handling
 - [ ] Test with large PDF files (>100 pages)
 
 ### Dependency Management
-- [x] Update `Package.swift` with OpenAI SDK dependency (Not needed - using URLSession)
-- [x] Update `Package.swift` with Alamofire dependency (Not needed - using URLSession)  
-- [x] Resolve any dependency conflicts
-- [x] Test package resolution
+- [ ] Update `Package.swift` with OpenAI SDK dependency
+- [ ] Update `Package.swift` with Alamofire dependency
+- [ ] Resolve any dependency conflicts
+- [ ] Test package resolution
 
 ## 🧹 Phase 2: Technical Debt Cleanup (Week 3)
 
 ### Legacy File Removal
-- [x] Remove `OCRMax/OCRManager.swift`
-- [x] Remove `OCRMax/PDFProcessor.swift`
-- [x] Remove `OCRMax/WordExporter.swift`
-- [x] Remove `OCRMax/TesseractManager.swift`
+- [ ] Remove `OCRMax/OCRManager.swift`
+- [ ] Remove `OCRMax/PDFProcessor.swift`
+- [ ] Remove `OCRMax/WordExporter.swift`
+- [ ] Remove `OCRMax/TesseractManager.swift`
 
 ### Reference Updates
-- [x] Update all imports from legacy files
-- [x] Update all instantiations to use new services
-- [x] Remove unused import statements
-- [x] Verify no broken references remain
+- [ ] Update all imports from legacy files
+- [ ] Update all instantiations to use new services
+- [ ] Remove unused import statements
+- [ ] Verify no broken references remain
 
 ## 🏗️ Phase 3: Architecture Refactoring (Week 4-5)
 

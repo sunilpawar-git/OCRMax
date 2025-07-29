@@ -9,7 +9,10 @@
       "Bash(git checkout:*)",
       "Bash(mkdir:*)",
       "Bash(git push:*)",
-      "WebFetch(domain:github.com)"
+      "WebFetch(domain:github.com)",
+      "Bash(git pull:*)",
+      "Bash(git stash:*)",
+      "Bash(rm:*)"
     ],
     "deny": []
   }
