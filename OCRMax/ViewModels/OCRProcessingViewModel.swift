@@ -329,28 +329,29 @@ final class OCRProcessingViewModel: ObservableObject {
     }
     
     private func performBatchOCRProcessing(url: URL, pageCount: Int) async {
-        var allExtractedText = ""
-        let batchSize = calculateOptimalBatchSize(for: pageCount)
-        
         do {
             if selectedOCREngine == .tesseract {
                 tesseractOCRService.setLanguage(selectedLanguage)
             }
             
-            let totalBatches = (pageCount + batchSize - 1) / batchSize
+            let batchSize = calculateOptimalBatchSize(for: pageCount)
+            var allExtractedText = ""
             
-            for batchIndex in 0..<totalBatches {
-                let startPage = batchIndex * batchSize
-                let endPage = min(startPage + batchSize, pageCount)
-                let batchProgress = Int((Double(batchIndex) / Double(totalBatches)) * 100)
+            // Collect all batches first
+            var allBatches: [(images: [UIImage], batchNumber: Int, totalBatches: Int)] = []
+            
+            try pdfProcessor.extractImagesBatch(from: url, batchSize: batchSize) { batchImages, batchNumber, totalBatchCount in
+                allBatches.append((images: batchImages, batchNumber: batchNumber, totalBatches: totalBatchCount))
+            }
+            
+            // Process each batch sequentially with async OCR
+            for batch in allBatches {
+                let batchProgress = Int((Double(batch.batchNumber - 1) / Double(batch.totalBatches)) * 100)
+                progressText = "Processing batch \(batch.batchNumber) of \(batch.totalBatches) (\(batchProgress)% complete)"
                 
-                progressText = "Processing batch \(batchIndex + 1) of \(totalBatches) (\(batchProgress)% complete) - Pages \(startPage + 1) to \(endPage)"
-                
-                let batchImages = try await extractBatchImages(from: url, startPage: startPage, endPage: endPage)
-                
-                let batchText = try await currentOCRService.recognizeText(from: batchImages) { [weak self] progress in
+                let batchText = try await currentOCRService.recognizeText(from: batch.images) { [weak self] progress in
                     Task { @MainActor in
-                        self?.progressText = "Batch \(batchIndex + 1)/\(totalBatches) (\(batchProgress)%): \(progress)"
+                        self?.progressText = "Batch \(batch.batchNumber)/\(batch.totalBatches) (\(batchProgress)%): \(progress)"
                     }
                 }
                 
@@ -367,56 +368,6 @@ final class OCRProcessingViewModel: ObservableObject {
             
         } catch {
             handleError(error)
-        }
-    }
-    
-    private func extractBatchImages(from url: URL, startPage: Int, endPage: Int) async throws -> [UIImage] {
-        return try await withCheckedThrowingContinuation { continuation in
-            guard url.startAccessingSecurityScopedResource() else {
-                continuation.resume(throwing: OCRError.fileAccessDenied)
-                return
-            }
-            defer { url.stopAccessingSecurityScopedResource() }
-            
-            guard let pdfDocument = PDFDocument(url: url) else {
-                continuation.resume(throwing: OCRError.unsupportedFormat)
-                return
-            }
-            
-            var batchImages: [UIImage] = []
-            
-            for pageIndex in startPage..<endPage {
-                guard let page = pdfDocument.page(at: pageIndex) else {
-                    continue
-                }
-                
-                let pageImage = renderPageAsImage(page: page)
-                batchImages.append(pageImage)
-            }
-            
-            continuation.resume(returning: batchImages)
-        }
-    }
-    
-    private func renderPageAsImage(page: PDFPage) -> UIImage {
-        let imageScale: CGFloat = 2.0
-        let pageRect = page.bounds(for: .mediaBox)
-        let scaledSize = CGSize(
-            width: pageRect.width * imageScale,
-            height: pageRect.height * imageScale
-        )
-        
-        let renderer = UIGraphicsImageRenderer(size: scaledSize)
-        
-        return renderer.image { context in
-            UIColor.white.set()
-            context.fill(CGRect(origin: .zero, size: scaledSize))
-            
-            context.cgContext.interpolationQuality = .high
-            context.cgContext.translateBy(x: 0, y: scaledSize.height)
-            context.cgContext.scaleBy(x: imageScale, y: -imageScale)
-            
-            page.draw(with: .mediaBox, to: context.cgContext)
         }
     }
     

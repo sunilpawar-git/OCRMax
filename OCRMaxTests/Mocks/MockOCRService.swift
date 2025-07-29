@@ -35,12 +35,19 @@ final class MockVisionOCRService: OCRServiceProtocol {
         if shouldSucceed {
             for (index, _) in images.enumerated() {
                 let message = "Processing page \(index + 1) of \(images.count)"
-                progressMessages.append(message)
+                await MainActor.run {
+                    progressMessages.append(message)
+                }
                 progressHandler(message)
+                
+                // Add a small delay to simulate processing
+                try? await Task.sleep(nanoseconds: 10_000_000) // 0.01 seconds
             }
             
             let finalMessage = "OCR processing completed"
-            progressMessages.append(finalMessage)
+            await MainActor.run {
+                progressMessages.append(finalMessage)
+            }
             progressHandler(finalMessage)
             
             return mockText

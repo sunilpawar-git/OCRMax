@@ -13,7 +13,11 @@ final class MockPDFProcessor: PDFProcessorProtocol {
     
     var shouldSucceed = true
     var mockImages: [UIImage] = []
-    var mockPageCount = 1
+    var mockPageCount = 1 {
+        didSet {
+            setupMockImages()
+        }
+    }
     var mockText = "Sample PDF text"
     var mockError = OCRError.unsupportedFormat
     var extractImagesCallCount = 0
@@ -74,7 +78,7 @@ final class MockPDFProcessor: PDFProcessorProtocol {
     
     private func setupMockImages() {
         let image = createMockImage()
-        mockImages = [image, image] // Two pages
+        mockImages = Array(repeating: image, count: max(mockPageCount, 2))
     }
     
     private func createMockImage() -> UIImage {
