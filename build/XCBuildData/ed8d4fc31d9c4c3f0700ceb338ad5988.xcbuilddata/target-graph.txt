@@ -1,0 +1,4 @@
+Target dependency graph (2 targets)
+Target 'OCRMaxTests' in project 'OCRMax'
+➜ Explicit dependency on target 'OCRMax' in project 'OCRMax'
+Target 'OCRMax' in project 'OCRMax' (no dependencies)

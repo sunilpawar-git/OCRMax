@@ -46,9 +46,8 @@ class MockAIAPIClient: AIAPIClientProtocol {
             }
         }
         
-        if mockResponse.isEmpty {
-            throw APIError.invalidResponse
-        }
+        // Return empty response instead of throwing error
+        // The service will handle empty responses appropriately
         
         return mockResponse
     }

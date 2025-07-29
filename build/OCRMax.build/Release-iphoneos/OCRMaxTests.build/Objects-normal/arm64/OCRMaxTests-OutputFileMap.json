@@ -1,0 +1,135 @@
+{
+  "" : {
+    "const-values" : "/Users/sunil/Desktop/OCRMax/build/OCRMax.build/Release-iphoneos/OCRMaxTests.build/Objects-normal/arm64/OCRMaxTests-master.swiftconstvalues",
+    "dependencies" : "/Users/sunil/Desktop/OCRMax/build/OCRMax.build/Release-iphoneos/OCRMaxTests.build/Objects-normal/arm64/OCRMaxTests-master.d",
+    "diagnostics" : "/Users/sunil/Desktop/OCRMax/build/OCRMax.build/Release-iphoneos/OCRMaxTests.build/Objects-normal/arm64/OCRMaxTests-master.dia",
+    "emit-module-dependencies" : "/Users/sunil/Desktop/OCRMax/build/OCRMax.build/Release-iphoneos/OCRMaxTests.build/Objects-normal/arm64/OCRMaxTests-master-emit-module.d",
+    "emit-module-diagnostics" : "/Users/sunil/Desktop/OCRMax/build/OCRMax.build/Release-iphoneos/OCRMaxTests.build/Objects-normal/arm64/OCRMaxTests-master-emit-module.dia",
+    "swift-dependencies" : "/Users/sunil/Desktop/OCRMax/build/OCRMax.build/Release-iphoneos/OCRMaxTests.build/Objects-normal/arm64/OCRMaxTests-master.swiftdeps"
+  },
+  "/Users/sunil/Desktop/OCRMax/OCRMaxTests/Integration/BatchProcessingIntegrationTests.swift" : {
+    "index-unit-output-path" : "/OCRMax.build/Release-iphoneos/OCRMaxTests.build/Objects-normal/arm64/BatchProcessingIntegrationTests.o",
+    "llvm-bc" : "/Users/sunil/Desktop/OCRMax/build/OCRMax.build/Release-iphoneos/OCRMaxTests.build/Objects-normal/arm64/BatchProcessingIntegrationTests.bc",
+    "object" : "/Users/sunil/Desktop/OCRMax/build/OCRMax.build/Release-iphoneos/OCRMaxTests.build/Objects-normal/arm64/BatchProcessingIntegrationTests.o"
+  },
+  "/Users/sunil/Desktop/OCRMax/OCRMaxTests/Integration/OCRIntegrationTests.swift" : {
+    "index-unit-output-path" : "/OCRMax.build/Release-iphoneos/OCRMaxTests.build/Objects-normal/arm64/OCRIntegrationTests.o",
+    "llvm-bc" : "/Users/sunil/Desktop/OCRMax/build/OCRMax.build/Release-iphoneos/OCRMaxTests.build/Objects-normal/arm64/OCRIntegrationTests.bc",
+    "object" : "/Users/sunil/Desktop/OCRMax/build/OCRMax.build/Release-iphoneos/OCRMaxTests.build/Objects-normal/arm64/OCRIntegrationTests.o"
+  },
+  "/Users/sunil/Desktop/OCRMax/OCRMaxTests/Mocks/MockAIAPIClient.swift" : {
+    "index-unit-output-path" : "/OCRMax.build/Release-iphoneos/OCRMaxTests.build/Objects-normal/arm64/MockAIAPIClient.o",
+    "llvm-bc" : "/Users/sunil/Desktop/OCRMax/build/OCRMax.build/Release-iphoneos/OCRMaxTests.build/Objects-normal/arm64/MockAIAPIClient.bc",
+    "object" : "/Users/sunil/Desktop/OCRMax/build/OCRMax.build/Release-iphoneos/OCRMaxTests.build/Objects-normal/arm64/MockAIAPIClient.o"
+  },
+  "/Users/sunil/Desktop/OCRMax/OCRMaxTests/Mocks/MockAIFormattingService.swift" : {
+    "index-unit-output-path" : "/OCRMax.build/Release-iphoneos/OCRMaxTests.build/Objects-normal/arm64/MockAIFormattingService.o",
+    "llvm-bc" : "/Users/sunil/Desktop/OCRMax/build/OCRMax.build/Release-iphoneos/OCRMaxTests.build/Objects-normal/arm64/MockAIFormattingService.bc",
+    "object" : "/Users/sunil/Desktop/OCRMax/build/OCRMax.build/Release-iphoneos/OCRMaxTests.build/Objects-normal/arm64/MockAIFormattingService.o"
+  },
+  "/Users/sunil/Desktop/OCRMax/OCRMaxTests/Mocks/MockDocumentExporter.swift" : {
+    "index-unit-output-path" : "/OCRMax.build/Release-iphoneos/OCRMaxTests.build/Objects-normal/arm64/MockDocumentExporter.o",
+    "llvm-bc" : "/Users/sunil/Desktop/OCRMax/build/OCRMax.build/Release-iphoneos/OCRMaxTests.build/Objects-normal/arm64/MockDocumentExporter.bc",
+    "object" : "/Users/sunil/Desktop/OCRMax/build/OCRMax.build/Release-iphoneos/OCRMaxTests.build/Objects-normal/arm64/MockDocumentExporter.o"
+  },
+  "/Users/sunil/Desktop/OCRMax/OCRMaxTests/Mocks/MockEnhancedVisionOCRService.swift" : {
+    "index-unit-output-path" : "/OCRMax.build/Release-iphoneos/OCRMaxTests.build/Objects-normal/arm64/MockEnhancedVisionOCRService.o",
+    "llvm-bc" : "/Users/sunil/Desktop/OCRMax/build/OCRMax.build/Release-iphoneos/OCRMaxTests.build/Objects-normal/arm64/MockEnhancedVisionOCRService.bc",
+    "object" : "/Users/sunil/Desktop/OCRMax/build/OCRMax.build/Release-iphoneos/OCRMaxTests.build/Objects-normal/arm64/MockEnhancedVisionOCRService.o"
+  },
+  "/Users/sunil/Desktop/OCRMax/OCRMaxTests/Mocks/MockLayoutAnalyzer.swift" : {
+    "index-unit-output-path" : "/OCRMax.build/Release-iphoneos/OCRMaxTests.build/Objects-normal/arm64/MockLayoutAnalyzer.o",
+    "llvm-bc" : "/Users/sunil/Desktop/OCRMax/build/OCRMax.build/Release-iphoneos/OCRMaxTests.build/Objects-normal/arm64/MockLayoutAnalyzer.bc",
+    "object" : "/Users/sunil/Desktop/OCRMax/build/OCRMax.build/Release-iphoneos/OCRMaxTests.build/Objects-normal/arm64/MockLayoutAnalyzer.o"
+  },
+  "/Users/sunil/Desktop/OCRMax/OCRMaxTests/Mocks/MockOCRService.swift" : {
+    "index-unit-output-path" : "/OCRMax.build/Release-iphoneos/OCRMaxTests.build/Objects-normal/arm64/MockOCRService.o",
+    "llvm-bc" : "/Users/sunil/Desktop/OCRMax/build/OCRMax.build/Release-iphoneos/OCRMaxTests.build/Objects-normal/arm64/MockOCRService.bc",
+    "object" : "/Users/sunil/Desktop/OCRMax/build/OCRMax.build/Release-iphoneos/OCRMaxTests.build/Objects-normal/arm64/MockOCRService.o"
+  },
+  "/Users/sunil/Desktop/OCRMax/OCRMaxTests/Mocks/MockPDFProcessor.swift" : {
+    "index-unit-output-path" : "/OCRMax.build/Release-iphoneos/OCRMaxTests.build/Objects-normal/arm64/MockPDFProcessor.o",
+    "llvm-bc" : "/Users/sunil/Desktop/OCRMax/build/OCRMax.build/Release-iphoneos/OCRMaxTests.build/Objects-normal/arm64/MockPDFProcessor.bc",
+    "object" : "/Users/sunil/Desktop/OCRMax/build/OCRMax.build/Release-iphoneos/OCRMaxTests.build/Objects-normal/arm64/MockPDFProcessor.o"
+  },
+  "/Users/sunil/Desktop/OCRMax/OCRMaxTests/Mocks/MockStoreKitService.swift" : {
+    "index-unit-output-path" : "/OCRMax.build/Release-iphoneos/OCRMaxTests.build/Objects-normal/arm64/MockStoreKitService.o",
+    "llvm-bc" : "/Users/sunil/Desktop/OCRMax/build/OCRMax.build/Release-iphoneos/OCRMaxTests.build/Objects-normal/arm64/MockStoreKitService.bc",
+    "object" : "/Users/sunil/Desktop/OCRMax/build/OCRMax.build/Release-iphoneos/OCRMaxTests.build/Objects-normal/arm64/MockStoreKitService.o"
+  },
+  "/Users/sunil/Desktop/OCRMax/OCRMaxTests/Mocks/MockSubscriptionManager.swift" : {
+    "index-unit-output-path" : "/OCRMax.build/Release-iphoneos/OCRMaxTests.build/Objects-normal/arm64/MockSubscriptionManager.o",
+    "llvm-bc" : "/Users/sunil/Desktop/OCRMax/build/OCRMax.build/Release-iphoneos/OCRMaxTests.build/Objects-normal/arm64/MockSubscriptionManager.bc",
+    "object" : "/Users/sunil/Desktop/OCRMax/build/OCRMax.build/Release-iphoneos/OCRMaxTests.build/Objects-normal/arm64/MockSubscriptionManager.o"
+  },
+  "/Users/sunil/Desktop/OCRMax/OCRMaxTests/Mocks/MockTesseractOCRService.swift" : {
+    "index-unit-output-path" : "/OCRMax.build/Release-iphoneos/OCRMaxTests.build/Objects-normal/arm64/MockTesseractOCRService.o",
+    "llvm-bc" : "/Users/sunil/Desktop/OCRMax/build/OCRMax.build/Release-iphoneos/OCRMaxTests.build/Objects-normal/arm64/MockTesseractOCRService.bc",
+    "object" : "/Users/sunil/Desktop/OCRMax/build/OCRMax.build/Release-iphoneos/OCRMaxTests.build/Objects-normal/arm64/MockTesseractOCRService.o"
+  },
+  "/Users/sunil/Desktop/OCRMax/OCRMaxTests/OCRMaxTests.swift" : {
+    "index-unit-output-path" : "/OCRMax.build/Release-iphoneos/OCRMaxTests.build/Objects-normal/arm64/OCRMaxTests.o",
+    "llvm-bc" : "/Users/sunil/Desktop/OCRMax/build/OCRMax.build/Release-iphoneos/OCRMaxTests.build/Objects-normal/arm64/OCRMaxTests.bc",
+    "object" : "/Users/sunil/Desktop/OCRMax/build/OCRMax.build/Release-iphoneos/OCRMaxTests.build/Objects-normal/arm64/OCRMaxTests.o"
+  },
+  "/Users/sunil/Desktop/OCRMax/OCRMaxTests/Services/AIFormattingServiceTests.swift" : {
+    "index-unit-output-path" : "/OCRMax.build/Release-iphoneos/OCRMaxTests.build/Objects-normal/arm64/AIFormattingServiceTests.o",
+    "llvm-bc" : "/Users/sunil/Desktop/OCRMax/build/OCRMax.build/Release-iphoneos/OCRMaxTests.build/Objects-normal/arm64/AIFormattingServiceTests.bc",
+    "object" : "/Users/sunil/Desktop/OCRMax/build/OCRMax.build/Release-iphoneos/OCRMaxTests.build/Objects-normal/arm64/AIFormattingServiceTests.o"
+  },
+  "/Users/sunil/Desktop/OCRMax/OCRMaxTests/Services/DocumentExportServiceTests.swift" : {
+    "index-unit-output-path" : "/OCRMax.build/Release-iphoneos/OCRMaxTests.build/Objects-normal/arm64/DocumentExportServiceTests.o",
+    "llvm-bc" : "/Users/sunil/Desktop/OCRMax/build/OCRMax.build/Release-iphoneos/OCRMaxTests.build/Objects-normal/arm64/DocumentExportServiceTests.bc",
+    "object" : "/Users/sunil/Desktop/OCRMax/build/OCRMax.build/Release-iphoneos/OCRMaxTests.build/Objects-normal/arm64/DocumentExportServiceTests.o"
+  },
+  "/Users/sunil/Desktop/OCRMax/OCRMaxTests/Services/EnhancedVisionOCRServiceTests.swift" : {
+    "index-unit-output-path" : "/OCRMax.build/Release-iphoneos/OCRMaxTests.build/Objects-normal/arm64/EnhancedVisionOCRServiceTests.o",
+    "llvm-bc" : "/Users/sunil/Desktop/OCRMax/build/OCRMax.build/Release-iphoneos/OCRMaxTests.build/Objects-normal/arm64/EnhancedVisionOCRServiceTests.bc",
+    "object" : "/Users/sunil/Desktop/OCRMax/build/OCRMax.build/Release-iphoneos/OCRMaxTests.build/Objects-normal/arm64/EnhancedVisionOCRServiceTests.o"
+  },
+  "/Users/sunil/Desktop/OCRMax/OCRMaxTests/Services/LayoutAnalyzerTests.swift" : {
+    "index-unit-output-path" : "/OCRMax.build/Release-iphoneos/OCRMaxTests.build/Objects-normal/arm64/LayoutAnalyzerTests.o",
+    "llvm-bc" : "/Users/sunil/Desktop/OCRMax/build/OCRMax.build/Release-iphoneos/OCRMaxTests.build/Objects-normal/arm64/LayoutAnalyzerTests.bc",
+    "object" : "/Users/sunil/Desktop/OCRMax/build/OCRMax.build/Release-iphoneos/OCRMaxTests.build/Objects-normal/arm64/LayoutAnalyzerTests.o"
+  },
+  "/Users/sunil/Desktop/OCRMax/OCRMaxTests/Services/SubscriptionManagerTests.swift" : {
+    "index-unit-output-path" : "/OCRMax.build/Release-iphoneos/OCRMaxTests.build/Objects-normal/arm64/SubscriptionManagerTests.o",
+    "llvm-bc" : "/Users/sunil/Desktop/OCRMax/build/OCRMax.build/Release-iphoneos/OCRMaxTests.build/Objects-normal/arm64/SubscriptionManagerTests.bc",
+    "object" : "/Users/sunil/Desktop/OCRMax/build/OCRMax.build/Release-iphoneos/OCRMaxTests.build/Objects-normal/arm64/SubscriptionManagerTests.o"
+  },
+  "/Users/sunil/Desktop/OCRMax/OCRMaxTests/Services/TesseractOCRServiceTests.swift" : {
+    "index-unit-output-path" : "/OCRMax.build/Release-iphoneos/OCRMaxTests.build/Objects-normal/arm64/TesseractOCRServiceTests.o",
+    "llvm-bc" : "/Users/sunil/Desktop/OCRMax/build/OCRMax.build/Release-iphoneos/OCRMaxTests.build/Objects-normal/arm64/TesseractOCRServiceTests.bc",
+    "object" : "/Users/sunil/Desktop/OCRMax/build/OCRMax.build/Release-iphoneos/OCRMaxTests.build/Objects-normal/arm64/TesseractOCRServiceTests.o"
+  },
+  "/Users/sunil/Desktop/OCRMax/OCRMaxTests/Services/VisionOCRServiceTests.swift" : {
+    "index-unit-output-path" : "/OCRMax.build/Release-iphoneos/OCRMaxTests.build/Objects-normal/arm64/VisionOCRServiceTests.o",
+    "llvm-bc" : "/Users/sunil/Desktop/OCRMax/build/OCRMax.build/Release-iphoneos/OCRMaxTests.build/Objects-normal/arm64/VisionOCRServiceTests.bc",
+    "object" : "/Users/sunil/Desktop/OCRMax/build/OCRMax.build/Release-iphoneos/OCRMaxTests.build/Objects-normal/arm64/VisionOCRServiceTests.o"
+  },
+  "/Users/sunil/Desktop/OCRMax/OCRMaxTests/ViewModels/DocumentLibraryViewModelTests.swift" : {
+    "index-unit-output-path" : "/OCRMax.build/Release-iphoneos/OCRMaxTests.build/Objects-normal/arm64/DocumentLibraryViewModelTests.o",
+    "llvm-bc" : "/Users/sunil/Desktop/OCRMax/build/OCRMax.build/Release-iphoneos/OCRMaxTests.build/Objects-normal/arm64/DocumentLibraryViewModelTests.bc",
+    "object" : "/Users/sunil/Desktop/OCRMax/build/OCRMax.build/Release-iphoneos/OCRMaxTests.build/Objects-normal/arm64/DocumentLibraryViewModelTests.o"
+  },
+  "/Users/sunil/Desktop/OCRMax/OCRMaxTests/ViewModels/FormattingOptionsViewModelTests.swift" : {
+    "index-unit-output-path" : "/OCRMax.build/Release-iphoneos/OCRMaxTests.build/Objects-normal/arm64/FormattingOptionsViewModelTests.o",
+    "llvm-bc" : "/Users/sunil/Desktop/OCRMax/build/OCRMax.build/Release-iphoneos/OCRMaxTests.build/Objects-normal/arm64/FormattingOptionsViewModelTests.bc",
+    "object" : "/Users/sunil/Desktop/OCRMax/build/OCRMax.build/Release-iphoneos/OCRMaxTests.build/Objects-normal/arm64/FormattingOptionsViewModelTests.o"
+  },
+  "/Users/sunil/Desktop/OCRMax/OCRMaxTests/ViewModels/OCRProcessingViewModelTests.swift" : {
+    "index-unit-output-path" : "/OCRMax.build/Release-iphoneos/OCRMaxTests.build/Objects-normal/arm64/OCRProcessingViewModelTests.o",
+    "llvm-bc" : "/Users/sunil/Desktop/OCRMax/build/OCRMax.build/Release-iphoneos/OCRMaxTests.build/Objects-normal/arm64/OCRProcessingViewModelTests.bc",
+    "object" : "/Users/sunil/Desktop/OCRMax/build/OCRMax.build/Release-iphoneos/OCRMaxTests.build/Objects-normal/arm64/OCRProcessingViewModelTests.o"
+  },
+  "/Users/sunil/Desktop/OCRMax/OCRMaxTests/ViewModels/OCRViewModelTests.swift" : {
+    "index-unit-output-path" : "/OCRMax.build/Release-iphoneos/OCRMaxTests.build/Objects-normal/arm64/OCRViewModelTests.o",
+    "llvm-bc" : "/Users/sunil/Desktop/OCRMax/build/OCRMax.build/Release-iphoneos/OCRMaxTests.build/Objects-normal/arm64/OCRViewModelTests.bc",
+    "object" : "/Users/sunil/Desktop/OCRMax/build/OCRMax.build/Release-iphoneos/OCRMaxTests.build/Objects-normal/arm64/OCRViewModelTests.o"
+  },
+  "/Users/sunil/Desktop/OCRMax/OCRMaxTests/ViewModels/SubscriptionViewModelTests.swift" : {
+    "index-unit-output-path" : "/OCRMax.build/Release-iphoneos/OCRMaxTests.build/Objects-normal/arm64/SubscriptionViewModelTests.o",
+    "llvm-bc" : "/Users/sunil/Desktop/OCRMax/build/OCRMax.build/Release-iphoneos/OCRMaxTests.build/Objects-normal/arm64/SubscriptionViewModelTests.bc",
+    "object" : "/Users/sunil/Desktop/OCRMax/build/OCRMax.build/Release-iphoneos/OCRMaxTests.build/Objects-normal/arm64/SubscriptionViewModelTests.o"
+  }
+}

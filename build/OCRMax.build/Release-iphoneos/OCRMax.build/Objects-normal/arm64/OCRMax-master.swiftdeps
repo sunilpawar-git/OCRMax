@@ -1,0 +1,37 @@
+version: "Apple Swift version 6.1.2 (swiftlang-6.1.2.1.2 clang-1700.0.13.5)"
+options: "5da97946c9a42a0f081ecc1a284dc804154a2fb4b46a101bde0dbf77e01430f8"
+build_start_time: [1753787939, 452418000]
+build_end_time: [1753787949, 192037000]
+inputs:
+  "/Users/sunil/Desktop/OCRMax/OCRMax/CameraView.swift": [1753700642, 534796695]
+  "/Users/sunil/Desktop/OCRMax/OCRMax/ContentView.swift": [1753711106, 836271052]
+  "/Users/sunil/Desktop/OCRMax/OCRMax/Models/TextBlock.swift": [1753776890, 480550203]
+  "/Users/sunil/Desktop/OCRMax/OCRMax/OCRMaxApp.swift": [1753633533, 343651607]
+  "/Users/sunil/Desktop/OCRMax/OCRMax/Persistence.swift": [1753633534, 560893094]
+  "/Users/sunil/Desktop/OCRMax/OCRMax/Protocols/OCRServiceProtocol.swift": [1753780523, 983420768]
+  "/Users/sunil/Desktop/OCRMax/OCRMax/Services/AIFormattingService.swift": [1753776890, 480900202]
+  "/Users/sunil/Desktop/OCRMax/OCRMax/Services/DocumentExportService.swift": [1753776890, 482256988]
+  "/Users/sunil/Desktop/OCRMax/OCRMax/Services/EnhancedVisionOCRService.swift": [1753776890, 482630654]
+  "/Users/sunil/Desktop/OCRMax/OCRMax/Services/LayoutAnalyzer.swift": [1753776890, 489576793]
+  "/Users/sunil/Desktop/OCRMax/OCRMax/Services/PDFProcessingService.swift": [1753636457, 906663296]
+  "/Users/sunil/Desktop/OCRMax/OCRMax/Services/SubscriptionManager.swift": [1753780545, 565440485]
+  "/Users/sunil/Desktop/OCRMax/OCRMax/Services/TesseractConfiguration.swift": [1753635936, 588532663]
+  "/Users/sunil/Desktop/OCRMax/OCRMax/Services/TesseractOCRService.swift": [1753635877, 477827690]
+  "/Users/sunil/Desktop/OCRMax/OCRMax/Services/VisionOCRService.swift": [1753639174, 428547986]
+  "/Users/sunil/Desktop/OCRMax/OCRMax/ViewModels/DocumentLibraryViewModel.swift": [1753779487, 954743057]
+  "/Users/sunil/Desktop/OCRMax/OCRMax/ViewModels/FormattingOptionsViewModel.swift": [1753780676, 312270679]
+  "/Users/sunil/Desktop/OCRMax/OCRMax/ViewModels/OCRProcessingViewModel.swift": [1753780630, 549635207]
+  "/Users/sunil/Desktop/OCRMax/OCRMax/ViewModels/OCRViewModel.swift": [1753779718, 836918918]
+  "/Users/sunil/Desktop/OCRMax/OCRMax/ViewModels/SubscriptionViewModel.swift": [1753780564, 451432225]
+  "/Users/sunil/Desktop/OCRMax/OCRMax/Views/DocumentDetailView.swift": [1753716427, 491160528]
+  "/Users/sunil/Desktop/OCRMax/OCRMax/Views/DocumentScannerView.swift": [1753700589, 78716452]
+  "/Users/sunil/Desktop/OCRMax/OCRMax/Views/LibraryView.swift": [1753716667, 739924218]
+  "/Users/sunil/Desktop/OCRMax/OCRMax/Views/ScanView.swift": [1753711248, 536788661]
+  "/Users/sunil/Desktop/OCRMax/OCRMax/Views/SettingsView.swift": [1753700516, 928882040]
+  ? "/Users/sunil/Desktop/OCRMax/build/OCRMax.build/Release-iphoneos/OCRMax.build/DerivedSources/CoreDataGenerated/OCRMax/Item+CoreDataClass.swift"
+  : [1753787939, 387628975]
+  ? "/Users/sunil/Desktop/OCRMax/build/OCRMax.build/Release-iphoneos/OCRMax.build/DerivedSources/CoreDataGenerated/OCRMax/Item+CoreDataProperties.swift"
+  : [1753787939, 387928687]
+  ? "/Users/sunil/Desktop/OCRMax/build/OCRMax.build/Release-iphoneos/OCRMax.build/DerivedSources/CoreDataGenerated/OCRMax/OCRMax+CoreDataModel.swift"
+  : [1753787939, 386708755]
+  "/Users/sunil/Desktop/OCRMax/build/OCRMax.build/Release-iphoneos/OCRMax.build/DerivedSources/GeneratedAssetSymbols.swift": [1753787939, 67479328]
