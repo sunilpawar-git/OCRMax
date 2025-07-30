@@ -18,7 +18,8 @@
       "Bash(swift:*)",
       "Bash(mv:*)",
       "Bash(find:*)",
-      "Bash(xcrun xccov view:*)"
+      "Bash(xcrun xccov view:*)",
+      "Bash(git restore:*)"
     ],
     "deny": []
   }

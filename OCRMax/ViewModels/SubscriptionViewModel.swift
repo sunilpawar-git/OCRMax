@@ -55,7 +55,9 @@ final class SubscriptionViewModel: ObservableObject {
     // MARK: - Initialization
     init(subscriptionManager: SubscriptionManagerProtocol = SubscriptionManager()) {
         self.subscriptionManager = subscriptionManager
-        checkSubscriptionStatus()
+        Task {
+            await checkSubscriptionStatus()
+        }
     }
     
     // MARK: - Public Methods
@@ -75,7 +77,7 @@ final class SubscriptionViewModel: ObservableObject {
                 
                 if success {
                     showingSubscriptionUpgrade = false
-                    checkSubscriptionStatus()
+                    await checkSubscriptionStatus()
                 }
             } catch {
                 isProcessingPurchase = false
@@ -95,7 +97,7 @@ final class SubscriptionViewModel: ObservableObject {
                 isProcessingPurchase = false
                 
                 if success {
-                    checkSubscriptionStatus()
+                    await checkSubscriptionStatus()
                 }
             } catch {
                 isProcessingPurchase = false
