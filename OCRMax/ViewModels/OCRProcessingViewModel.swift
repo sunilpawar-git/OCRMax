@@ -101,10 +101,13 @@ final class OCRProcessingViewModel: ObservableObject {
         guard !isProcessing else { return }
         
         resetProcessingState()
+        isProcessing = true
         
         Task {
             if await shouldProceedWithLargeFile(url: url) {
                 await performOCRProcessing(url: url)
+            } else {
+                isProcessing = false
             }
         }
     }
@@ -113,6 +116,7 @@ final class OCRProcessingViewModel: ObservableObject {
         guard !isProcessing else { return }
         
         resetProcessingState()
+        isProcessing = true
         
         Task {
             await performImageOCRProcessing(images: images)
@@ -123,6 +127,7 @@ final class OCRProcessingViewModel: ObservableObject {
         guard !isProcessing else { return }
         
         resetProcessingState()
+        isProcessing = true
         
         Task {
             await loadAndProcessImageFile(url: url)
@@ -196,17 +201,20 @@ final class OCRProcessingViewModel: ObservableObject {
     }
     
     private func getFileSize(url: URL) throws -> Int64 {
-        guard url.startAccessingSecurityScopedResource() else {
-            throw OCRError.fileAccessDenied
+        // Try to access as security-scoped resource first, but don't fail if it's not needed
+        let needsSecurityScope = url.startAccessingSecurityScopedResource()
+        defer { 
+            if needsSecurityScope {
+                url.stopAccessingSecurityScopedResource() 
+            }
         }
-        defer { url.stopAccessingSecurityScopedResource() }
         
         let resourceValues = try url.resourceValues(forKeys: [.fileSizeKey])
         return Int64(resourceValues.fileSize ?? 0)
     }
     
     private func performOCRProcessing(url: URL) async {
-        isProcessing = true
+        // isProcessing is already set to true at the start of processPDF
         progressText = "Analyzing PDF..."
         
         let pageCount = pdfProcessor.getPageCount(from: url)
@@ -253,7 +261,6 @@ final class OCRProcessingViewModel: ObservableObject {
     }
     
     private func performImageOCRProcessing(images: [UIImage]) async {
-        isProcessing = true
         progressText = "Processing scanned images..."
         
         do {
@@ -287,7 +294,6 @@ final class OCRProcessingViewModel: ObservableObject {
     }
     
     private func loadAndProcessImageFile(url: URL) async {
-        isProcessing = true
         progressText = "Loading image file..."
         
         do {
