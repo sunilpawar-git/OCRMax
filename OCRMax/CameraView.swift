@@ -8,12 +8,31 @@
 import SwiftUI
 import VisionKit
 import UIKit
+import AVFoundation
 
 struct CameraView: UIViewControllerRepresentable {
     @Binding var isPresented: Bool
     let onImageCaptured: (UIImage) -> Void
     
-    func makeUIViewController(context: Context) -> UIImagePickerController {
+    func makeUIViewController(context: Context) -> UIViewController {
+        // Check camera availability and permissions
+        guard UIImagePickerController.isSourceTypeAvailable(.camera) else {
+            return createErrorViewController(message: "Camera not available on this device")
+        }
+        
+        let authStatus = AVCaptureDevice.authorizationStatus(for: .video)
+        switch authStatus {
+        case .denied, .restricted:
+            return createErrorViewController(message: "Camera access denied. Please enable in Settings.")
+        case .notDetermined:
+            // Permission will be requested automatically by UIImagePickerController
+            break
+        case .authorized:
+            break
+        @unknown default:
+            break
+        }
+        
         let picker = UIImagePickerController()
         picker.delegate = context.coordinator
         picker.sourceType = .camera
@@ -22,7 +41,20 @@ struct CameraView: UIViewControllerRepresentable {
         return picker
     }
     
-    func updateUIViewController(_ uiViewController: UIImagePickerController, context: Context) {}
+    private func createErrorViewController(message: String) -> UIViewController {
+        let alertController = UIAlertController(title: "Camera Error", message: message, preferredStyle: .alert)
+        alertController.addAction(UIAlertAction(title: "OK", style: .default) { _ in
+            isPresented = false
+        })
+        
+        let viewController = UIViewController()
+        DispatchQueue.main.async {
+            viewController.present(alertController, animated: true)
+        }
+        return viewController
+    }
+    
+    func updateUIViewController(_ uiViewController: UIViewController, context: Context) {}
     
     func makeCoordinator() -> Coordinator {
         Coordinator(self)

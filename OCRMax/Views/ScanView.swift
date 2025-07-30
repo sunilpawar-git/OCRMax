@@ -7,11 +7,28 @@
 
 import SwiftUI
 import UniformTypeIdentifiers
+import UIKit
+
+enum SheetType: Identifiable {
+    case camera
+    case documentScanner
+    case filePicker
+    case shareSheet
+    
+    var id: String {
+        switch self {
+        case .camera: return "camera"
+        case .documentScanner: return "documentScanner"
+        case .filePicker: return "filePicker"
+        case .shareSheet: return "shareSheet"
+        }
+    }
+}
 
 struct ScanView: View {
     @ObservedObject var viewModel: OCRViewModel
-    @State private var isDocumentPickerPresented = false
     @State private var showingSourceActionSheet = false
+    @State private var activeSheet: SheetType?
     
     init(viewModel: OCRViewModel) {
         self.viewModel = viewModel
@@ -39,46 +56,61 @@ struct ScanView: View {
             .navigationTitle("Scan")
             .navigationBarTitleDisplayMode(.large)
         }
-        .fileImporter(
-            isPresented: $isDocumentPickerPresented,
-            allowedContentTypes: [UTType.pdf, UTType.jpeg, UTType.png],
-            allowsMultipleSelection: false
-        ) { result in
-            handleFileSelection(result)
-        }
-        .sheet(isPresented: $viewModel.showingShareSheet) {
-            shareSheet
-        }
-        .sheet(isPresented: $viewModel.showingCamera) {
-            CameraView(isPresented: $viewModel.showingCamera) { image in
-                viewModel.handleCapturedImage(image)
-            }
-        }
-        .sheet(isPresented: $viewModel.showingDocumentScanner) {
-            if #available(iOS 13.0, *) {
-                DocumentScannerView(isPresented: $viewModel.showingDocumentScanner) { images in
-                    viewModel.handleScannedDocuments(images)
+        .sheet(item: $activeSheet) { sheetType in
+            switch sheetType {
+            case .camera:
+                CameraView(isPresented: Binding(
+                    get: { activeSheet == .camera },
+                    set: { if !$0 { activeSheet = nil } }
+                )) { image in
+                    viewModel.handleCapturedImage(image)
+                    activeSheet = nil
+                }
+            case .documentScanner:
+                if #available(iOS 13.0, *) {
+                    DocumentScannerView(isPresented: Binding(
+                        get: { activeSheet == .documentScanner },
+                        set: { if !$0 { activeSheet = nil } }
+                    )) { images in
+                        viewModel.handleScannedDocuments(images)
+                        activeSheet = nil
+                    }
+                }
+            case .filePicker:
+                DocumentPicker { result in
+                    handleFileSelection(result)
+                    activeSheet = nil
+                }
+            case .shareSheet:
+                if let wordDocumentURL = viewModel.wordDocumentURL {
+                    ActivityViewController(activityItems: [wordDocumentURL])
                 }
             }
         }
         .confirmationDialog("Select Source", isPresented: $showingSourceActionSheet) {
             if #available(iOS 13.0, *) {
                 Button("Document Scanner") {
-                    viewModel.showDocumentScanner()
+                    activeSheet = .documentScanner
                 }
             }
             
             Button("Camera") {
-                viewModel.showCamera()
+                activeSheet = .camera
             }
             
             Button("Files") {
-                isDocumentPickerPresented = true
+                activeSheet = .filePicker
             }
             
             Button("Cancel", role: .cancel) { }
         } message: {
             Text("Choose how you want to add your document")
+        }
+        .onChange(of: viewModel.showingShareSheet) { _, showing in
+            if showing {
+                activeSheet = .shareSheet
+                viewModel.showingShareSheet = false
+            }
         }
         .alert("Error", isPresented: $viewModel.showingError) {
             Button("OK") { }
@@ -130,7 +162,7 @@ struct ScanView: View {
             HStack(spacing: 20) {
                 // Quick Scan Button
                 Button(action: {
-                    viewModel.showCamera()
+                    activeSheet = .camera
                 }) {
                     VStack(spacing: 8) {
                         Image(systemName: "camera.fill")
@@ -148,7 +180,7 @@ struct ScanView: View {
                 // Document Scanner
                 if #available(iOS 13.0, *) {
                     Button(action: {
-                        viewModel.showDocumentScanner()
+                        activeSheet = .documentScanner
                     }) {
                         VStack(spacing: 8) {
                             Image(systemName: "doc.text.viewfinder")
@@ -166,7 +198,7 @@ struct ScanView: View {
                 
                 // File Import
                 Button(action: {
-                    isDocumentPickerPresented = true
+                    activeSheet = .filePicker
                 }) {
                     VStack(spacing: 8) {
                         Image(systemName: "folder.fill")
@@ -348,10 +380,37 @@ struct ScanView: View {
         }
     }
     
-    @ViewBuilder
-    private var shareSheet: some View {
-        if let wordDocumentURL = viewModel.wordDocumentURL {
-            ActivityViewController(activityItems: [wordDocumentURL])
+    // Document Picker using UIViewControllerRepresentable
+    struct DocumentPicker: UIViewControllerRepresentable {
+        let onCompletion: (Result<[URL], Error>) -> Void
+        
+        func makeUIViewController(context: Context) -> UIDocumentPickerViewController {
+            let picker = UIDocumentPickerViewController(forOpeningContentTypes: [UTType.pdf, UTType.jpeg, UTType.png])
+            picker.allowsMultipleSelection = false
+            picker.delegate = context.coordinator
+            return picker
+        }
+        
+        func updateUIViewController(_ uiViewController: UIDocumentPickerViewController, context: Context) {}
+        
+        func makeCoordinator() -> Coordinator {
+            Coordinator(self)
+        }
+        
+        class Coordinator: NSObject, UIDocumentPickerDelegate {
+            let parent: DocumentPicker
+            
+            init(_ parent: DocumentPicker) {
+                self.parent = parent
+            }
+            
+            func documentPicker(_ controller: UIDocumentPickerViewController, didPickDocumentsAt urls: [URL]) {
+                parent.onCompletion(.success(urls))
+            }
+            
+            func documentPickerWasCancelled(_ controller: UIDocumentPickerViewController) {
+                parent.onCompletion(.failure(NSError(domain: "DocumentPickerCancelled", code: 0)))
+            }
         }
     }
     

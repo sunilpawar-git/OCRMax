@@ -201,10 +201,13 @@ final class OCRViewModel: ObservableObject {
     
     func handleCapturedImage(_ image: UIImage) {
         documentLibraryViewModel.handleCapturedImage(image)
-        ocrProcessingViewModel.processImages([image])
         
-        // Save document after processing completes
+        // Add small delay to ensure UI state updates properly
         Task {
+            try? await Task.sleep(nanoseconds: 500_000_000) // 0.5 second delay
+            ocrProcessingViewModel.processImages([image])
+            
+            // Save document after processing completes
             while ocrProcessingViewModel.isProcessing {
                 try? await Task.sleep(nanoseconds: 100_000_000)
             }
@@ -217,10 +220,13 @@ final class OCRViewModel: ObservableObject {
     
     func handleScannedDocuments(_ images: [UIImage]) {
         documentLibraryViewModel.handleScannedDocuments(images)
-        ocrProcessingViewModel.processImages(images)
         
-        // Save document after processing completes
+        // Add small delay to ensure UI state updates properly
         Task {
+            try? await Task.sleep(nanoseconds: 500_000_000) // 0.5 second delay
+            ocrProcessingViewModel.processImages(images)
+            
+            // Save document after processing completes
             while ocrProcessingViewModel.isProcessing {
                 try? await Task.sleep(nanoseconds: 100_000_000)
             }

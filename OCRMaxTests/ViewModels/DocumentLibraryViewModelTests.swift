@@ -17,11 +17,15 @@ final class DocumentLibraryViewModelTests: XCTestCase {
     
     override func setUp() {
         super.setUp()
+        // Clear UserDefaults to ensure test isolation
+        UserDefaults.standard.removeObject(forKey: "ProcessedDocuments")
         mockDocumentExporter = MockDocumentExporter()
         sut = DocumentLibraryViewModel(documentExporter: mockDocumentExporter)
     }
     
     override func tearDown() {
+        // Clean up UserDefaults after tests
+        UserDefaults.standard.removeObject(forKey: "ProcessedDocuments")
         sut = nil
         mockDocumentExporter = nil
         super.tearDown()
@@ -100,7 +104,12 @@ final class DocumentLibraryViewModelTests: XCTestCase {
     
     func testAddProcessedDocument() {
         let document = createMockProcessedDocument()
-        sut.processedDocuments.append(document)
+        sut.saveProcessedDocument(
+            name: document.name,
+            extractedText: document.extractedText,
+            sourceURL: document.sourceURL,
+            wordDocumentURL: document.wordDocumentURL
+        )
         
         XCTAssertEqual(sut.processedDocuments.count, 1)
         XCTAssertEqual(sut.processedDocuments.first?.name, document.name)
