@@ -18,7 +18,9 @@ final class SubscriptionManagerTests: XCTestCase {
         super.setUp()
         mockStoreKit = MockStoreKitService()
         mockStoreKit.reset()
-        subscriptionManager = SubscriptionManager(storeKitService: mockStoreKit)
+        // Use a clean UserDefaults for testing to avoid cached data
+        let testUserDefaults = UserDefaults(suiteName: "test-\(UUID().uuidString)")!
+        subscriptionManager = SubscriptionManager(storeKitService: mockStoreKit, userDefaults: testUserDefaults)
     }
     
     override func tearDown() {
