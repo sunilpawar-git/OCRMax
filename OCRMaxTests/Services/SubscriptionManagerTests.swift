@@ -233,10 +233,10 @@ final class SubscriptionManagerTests: XCTestCase {
         mockStoreKit.mockSubscriptionStatus = .premium
         mockStoreKit.artificialDelay = 0.1 // Add small delay to simulate network
         
-        // Start multiple concurrent status checks - only first one forces refresh
+        // Start multiple concurrent status checks - all use forceRefresh to ensure they would normally run
         async let check1 = subscriptionManager.checkSubscriptionStatus(forceRefresh: true)
-        async let check2 = subscriptionManager.checkSubscriptionStatus()
-        async let check3 = subscriptionManager.checkSubscriptionStatus()
+        async let check2 = subscriptionManager.checkSubscriptionStatus(forceRefresh: true)
+        async let check3 = subscriptionManager.checkSubscriptionStatus(forceRefresh: true)
         
         await check1
         await check2 

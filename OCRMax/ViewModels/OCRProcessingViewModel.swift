@@ -250,10 +250,8 @@ final class OCRProcessingViewModel: ObservableObject {
                 progressText = "OCR processing completed successfully!"
             }
             
-            DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-                self.isProcessing = false
-                self.progressText = ""
-            }
+            isProcessing = false
+            progressText = ""
             
         } catch {
             handleError(error)
@@ -283,10 +281,8 @@ final class OCRProcessingViewModel: ObservableObject {
                 progressText = "OCR processing completed successfully!"
             }
             
-            DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-                self.isProcessing = false
-                self.progressText = ""
-            }
+            isProcessing = false
+            progressText = ""
             
         } catch {
             handleError(error)
@@ -367,10 +363,8 @@ final class OCRProcessingViewModel: ObservableObject {
             
             progressText = "OCR processing completed successfully!"
             
-            DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-                self.isProcessing = false
-                self.progressText = ""
-            }
+            isProcessing = false
+            progressText = ""
             
         } catch {
             handleError(error)
@@ -420,10 +414,8 @@ final class OCRProcessingViewModel: ObservableObject {
             currentProcessedTextBlocks = textBlocks
             currentLayoutAnalysis = layoutAnalysis
             
-            DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-                self.isProcessing = false
-                self.progressText = ""
-            }
+            isProcessing = false
+            progressText = ""
             
         } catch {
             handleError(error)

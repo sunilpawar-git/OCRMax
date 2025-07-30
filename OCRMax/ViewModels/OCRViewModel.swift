@@ -201,35 +201,23 @@ final class OCRViewModel: ObservableObject {
     
     func handleCapturedImage(_ image: UIImage) {
         documentLibraryViewModel.handleCapturedImage(image)
-        
-        // Add small delay to ensure UI state updates properly
-        Task {
-            try? await Task.sleep(nanoseconds: 500_000_000) // 0.5 second delay
-            ocrProcessingViewModel.processImages([image])
-            
-            // Save document after processing completes
-            while ocrProcessingViewModel.isProcessing {
-                try? await Task.sleep(nanoseconds: 100_000_000)
-            }
-            
-            if !ocrProcessingViewModel.extractedText.isEmpty {
-                saveProcessedDocument()
-            }
-        }
     }
     
     func handleScannedDocuments(_ images: [UIImage]) {
         documentLibraryViewModel.handleScannedDocuments(images)
+    }
+    
+    func processImagesDirectly(_ images: [UIImage]) {
+        // Store images for processing but don't auto-process
+        documentLibraryViewModel.capturedImages = images
+        documentLibraryViewModel.selectedPDFURL = nil
         
-        // Add small delay to ensure UI state updates properly
+        // Start OCR processing immediately
         Task {
-            try? await Task.sleep(nanoseconds: 500_000_000) // 0.5 second delay
             ocrProcessingViewModel.processImages(images)
             
             // Save document after processing completes
-            while ocrProcessingViewModel.isProcessing {
-                try? await Task.sleep(nanoseconds: 100_000_000)
-            }
+            await waitForProcessingToComplete()
             
             if !ocrProcessingViewModel.extractedText.isEmpty {
                 saveProcessedDocument()
@@ -241,14 +229,16 @@ final class OCRViewModel: ObservableObject {
         ocrProcessingViewModel.processImages(capturedImages)
         
         // Save document after processing completes
-        Task {
-            while ocrProcessingViewModel.isProcessing {
-                try? await Task.sleep(nanoseconds: 100_000_000)
-            }
-            
-            if !ocrProcessingViewModel.extractedText.isEmpty {
-                saveProcessedDocument()
-            }
+        await waitForProcessingToComplete()
+        
+        if !ocrProcessingViewModel.extractedText.isEmpty {
+            saveProcessedDocument()
+        }
+    }
+    
+    private func waitForProcessingToComplete() async {
+        while ocrProcessingViewModel.isProcessing {
+            try? await Task.sleep(nanoseconds: 100_000_000) // 0.1 second
         }
     }
     

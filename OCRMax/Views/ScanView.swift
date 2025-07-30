@@ -25,10 +25,43 @@ enum SheetType: Identifiable {
     }
 }
 
+enum ScanState {
+    case idle
+    case capturing
+    case previewing
+    case processing
+    case completed
+    case error
+}
+
 struct ScanView: View {
     @ObservedObject var viewModel: OCRViewModel
-    @State private var showingSourceActionSheet = false
     @State private var activeSheet: SheetType?
+    @State private var scanState: ScanState = .idle
+    @State private var capturedSource: CapturedSource?
+    
+    enum CapturedSource {
+        case images([UIImage], sourceType: String)
+        case file(URL, fileName: String)
+        
+        var displayName: String {
+            switch self {
+            case .images(let images, let sourceType):
+                return "\(images.count) image\(images.count == 1 ? "" : "s") from \(sourceType)"
+            case .file(_, let fileName):
+                return fileName
+            }
+        }
+        
+        var count: Int {
+            switch self {
+            case .images(let images, _):
+                return images.count
+            case .file(_, _):
+                return 1
+            }
+        }
+    }
     
     init(viewModel: OCRViewModel) {
         self.viewModel = viewModel
@@ -41,12 +74,19 @@ struct ScanView: View {
                     .ignoresSafeArea()
                 
                 VStack(spacing: 24) {
-                    if viewModel.isProcessing {
+                    switch scanState {
+                    case .idle:
+                        idleSection
+                    case .capturing:
+                        capturingSection
+                    case .previewing:
+                        previewSection
+                    case .processing:
                         processingSection
-                    } else if viewModel.hasExtractedText {
+                    case .completed:
                         resultSection
-                    } else {
-                        scanningSection
+                    case .error:
+                        errorSection
                     }
                     
                     Spacer()
@@ -63,7 +103,7 @@ struct ScanView: View {
                     get: { activeSheet == .camera },
                     set: { if !$0 { activeSheet = nil } }
                 )) { image in
-                    viewModel.handleCapturedImage(image)
+                    handleCapturedImages([image], sourceType: "Camera")
                     activeSheet = nil
                 }
             case .documentScanner:
@@ -72,7 +112,7 @@ struct ScanView: View {
                         get: { activeSheet == .documentScanner },
                         set: { if !$0 { activeSheet = nil } }
                     )) { images in
-                        viewModel.handleScannedDocuments(images)
+                        handleCapturedImages(images, sourceType: "Scanner")
                         activeSheet = nil
                     }
                 }
@@ -87,42 +127,40 @@ struct ScanView: View {
                 }
             }
         }
-        .confirmationDialog("Select Source", isPresented: $showingSourceActionSheet) {
-            if #available(iOS 13.0, *) {
-                Button("Document Scanner") {
-                    activeSheet = .documentScanner
-                }
-            }
-            
-            Button("Camera") {
-                activeSheet = .camera
-            }
-            
-            Button("Files") {
-                activeSheet = .filePicker
-            }
-            
-            Button("Cancel", role: .cancel) { }
-        } message: {
-            Text("Choose how you want to add your document")
-        }
         .onChange(of: viewModel.showingShareSheet) { _, showing in
             if showing {
                 activeSheet = .shareSheet
                 viewModel.showingShareSheet = false
             }
         }
+        .onChange(of: viewModel.isProcessing) { _, isProcessing in
+            if !isProcessing && scanState == .processing {
+                if viewModel.hasExtractedText {
+                    scanState = .completed
+                } else if viewModel.showingError {
+                    scanState = .error
+                }
+            }
+        }
         .alert("Error", isPresented: $viewModel.showingError) {
-            Button("OK") { }
+            Button("Try Again") { 
+                scanState = .idle
+                capturedSource = nil
+            }
+            Button("Cancel", role: .cancel) {
+                scanState = .idle
+                capturedSource = nil
+            }
         } message: {
             Text(viewModel.errorMessage ?? "An unknown error occurred")
         }
     }
     
-    // MARK: - View Components
-    private var scanningSection: some View {
+    // MARK: - View Sections
+    
+    private var idleSection: some View {
         VStack(spacing: 32) {
-            // Camera Preview Area
+            // Instructions Area
             VStack(spacing: 16) {
                 ZStack {
                     RoundedRectangle(cornerRadius: 20)
@@ -134,11 +172,11 @@ struct ScanView: View {
                                     .font(.system(size: 60))
                                     .foregroundColor(.secondary)
                                 
-                                Text("Position your document")
+                                Text("Ready to Scan")
                                     .font(.headline)
                                     .foregroundColor(.secondary)
                                 
-                                Text("Tap to scan or choose from files")
+                                Text("Choose your scanning method below")
                                     .font(.subheadline)
                                     .foregroundColor(Color(UIColor.tertiaryLabel))
                                     .multilineTextAlignment(.center)
@@ -149,19 +187,14 @@ struct ScanView: View {
                                 .strokeBorder(style: StrokeStyle(lineWidth: 2, dash: [10]))
                                 .foregroundColor(.secondary.opacity(0.3))
                         )
-                        .onTapGesture {
-                            showingSourceActionSheet = true
-                        }
                 }
-                
-                // Selected file info
-                selectedFileInfo
             }
             
-            // Floating Action Buttons
+            // Action Buttons
             HStack(spacing: 20) {
-                // Quick Scan Button
+                // Camera Button
                 Button(action: {
+                    scanState = .capturing
                     activeSheet = .camera
                 }) {
                     VStack(spacing: 8) {
@@ -180,6 +213,7 @@ struct ScanView: View {
                 // Document Scanner
                 if #available(iOS 13.0, *) {
                     Button(action: {
+                        scanState = .capturing
                         activeSheet = .documentScanner
                     }) {
                         VStack(spacing: 8) {
@@ -198,6 +232,7 @@ struct ScanView: View {
                 
                 // File Import
                 Button(action: {
+                    scanState = .capturing
                     activeSheet = .filePicker
                 }) {
                     VStack(spacing: 8) {
@@ -216,76 +251,107 @@ struct ScanView: View {
         }
     }
     
-    @ViewBuilder
-    private var selectedFileInfo: some View {
-        if viewModel.hasSelectedPDF {
-            HStack {
-                Image(systemName: "doc.fill")
-                    .foregroundColor(.red)
-                    .font(.title2)
+    private var capturingSection: some View {
+        VStack(spacing: 24) {
+            VStack(spacing: 16) {
+                ProgressView()
+                    .scaleEffect(1.5)
                 
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("Selected File")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                    Text(viewModel.selectedFileName)
-                        .font(.subheadline)
-                        .fontWeight(.medium)
-                        .lineLimit(2)
-                }
+                Text("Opening Scanner...")
+                    .font(.headline)
+                    .foregroundColor(.secondary)
                 
-                Spacer()
-                
-                Button(action: {
-                    viewModel.processPDF(url: viewModel.selectedPDFURL!)
-                }) {
-                    Image(systemName: "arrow.right.circle.fill")
-                        .font(.title2)
-                        .foregroundColor(.blue)
-                }
+                Text("Position your document and capture")
+                    .font(.subheadline)
+                    .foregroundColor(Color(UIColor.tertiaryLabel))
+                    .multilineTextAlignment(.center)
             }
-            .padding()
-            .background(Color(.systemBackground))
-            .cornerRadius(12)
-            .shadow(color: .black.opacity(0.1), radius: 4, x: 0, y: 2)
-        } else if !viewModel.capturedImages.isEmpty {
-            HStack {
-                Image(systemName: "photo.stack.fill")
-                    .foregroundColor(.blue)
+            
+            Button("Cancel") {
+                activeSheet = nil
+                scanState = .idle
+            }
+            .foregroundColor(.secondary)
+        }
+    }
+    
+    private var previewSection: some View {
+        VStack(spacing: 24) {
+            // Preview Header
+            VStack(spacing: 8) {
+                Image(systemName: "checkmark.circle.fill")
+                    .font(.system(size: 40))
+                    .foregroundColor(.green)
+                
+                Text("Content Captured")
                     .font(.title2)
-                
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("Captured Images")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                    Text("\(viewModel.capturedImages.count) image(s)")
-                        .font(.subheadline)
-                        .fontWeight(.medium)
-                }
-                
-                Spacer()
-                
-                Button(action: {
-                    // Process captured images
-                    Task {
-                        await viewModel.processImages()
+                    .fontWeight(.semibold)
+            }
+            
+            // Preview Content
+            if let source = capturedSource {
+                VStack(spacing: 16) {
+                    HStack {
+                        Image(systemName: iconForSource(source))
+                            .foregroundColor(.blue)
+                            .font(.title2)
+                        
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("Ready to Process")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                            Text(source.displayName)
+                                .font(.subheadline)
+                                .fontWeight(.medium)
+                                .lineLimit(2)
+                        }
+                        
+                        Spacer()
                     }
-                }) {
-                    Image(systemName: "arrow.right.circle.fill")
-                        .font(.title2)
-                        .foregroundColor(.blue)
+                    .padding()
+                    .background(Color(.systemBackground))
+                    .cornerRadius(12)
+                    .shadow(color: .black.opacity(0.1), radius: 4, x: 0, y: 2)
+                    
+                    // Action Buttons
+                    HStack(spacing: 16) {
+                        Button(action: {
+                            startProcessing()
+                        }) {
+                            HStack {
+                                Image(systemName: "text.viewfinder")
+                                Text("Extract Text")
+                            }
+                            .font(.headline)
+                            .foregroundColor(.white)
+                            .padding()
+                            .background(Color.blue)
+                            .cornerRadius(12)
+                        }
+                        
+                        Button(action: {
+                            scanState = .idle
+                            capturedSource = nil
+                        }) {
+                            HStack {
+                                Image(systemName: "arrow.clockwise")
+                                Text("Scan Again")
+                            }
+                            .font(.headline)
+                            .foregroundColor(.blue)
+                            .padding()
+                            .background(Color.blue.opacity(0.1))
+                            .cornerRadius(12)
+                        }
+                    }
                 }
             }
-            .padding()
-            .background(Color(.systemBackground))
-            .cornerRadius(12)
-            .shadow(color: .black.opacity(0.1), radius: 4, x: 0, y: 2)
         }
     }
     
     private var processingSection: some View {
         VStack(spacing: 24) {
-            // Animated OCR Processing
+            // Animated Processing Indicator
             VStack(spacing: 16) {
                 ZStack {
                     Circle()
@@ -304,11 +370,11 @@ struct ScanView: View {
                         .foregroundColor(.blue)
                 }
                 
-                Text("Processing Document")
+                Text("Extracting Text")
                     .font(.title2)
                     .fontWeight(.semibold)
                 
-                Text(viewModel.progressText)
+                Text(viewModel.progressText.isEmpty ? "Analyzing document..." : viewModel.progressText)
                     .font(.subheadline)
                     .foregroundColor(.secondary)
                     .multilineTextAlignment(.center)
@@ -316,7 +382,6 @@ struct ScanView: View {
         }
     }
     
-    @ViewBuilder
     private var resultSection: some View {
         VStack(spacing: 20) {
             // Success Animation
@@ -328,6 +393,10 @@ struct ScanView: View {
                 Text("Text Extracted Successfully")
                     .font(.title2)
                     .fontWeight(.semibold)
+                
+                Text("Document saved to library")
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
             }
             
             // Text Preview
@@ -353,7 +422,7 @@ struct ScanView: View {
                 }) {
                     HStack {
                         Image(systemName: "doc.text")
-                        Text("Export to Word")
+                        Text("Export")
                     }
                     .font(.headline)
                     .foregroundColor(.white)
@@ -364,11 +433,11 @@ struct ScanView: View {
                 .disabled(!viewModel.canConvertToWord)
                 
                 Button(action: {
-                    viewModel.resetState()
+                    resetToIdle()
                 }) {
                     HStack {
-                        Image(systemName: "arrow.clockwise")
-                        Text("Scan Again")
+                        Image(systemName: "plus")
+                        Text("Scan More")
                     }
                     .font(.headline)
                     .foregroundColor(.blue)
@@ -377,6 +446,116 @@ struct ScanView: View {
                     .cornerRadius(12)
                 }
             }
+        }
+    }
+    
+    private var errorSection: some View {
+        VStack(spacing: 24) {
+            VStack(spacing: 16) {
+                Image(systemName: "exclamationmark.triangle.fill")
+                    .font(.system(size: 60))
+                    .foregroundColor(.red)
+                
+                Text("Processing Failed")
+                    .font(.title2)
+                    .fontWeight(.semibold)
+                
+                Text(viewModel.errorMessage ?? "An unknown error occurred")
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+                    .multilineTextAlignment(.center)
+            }
+            
+            HStack(spacing: 16) {
+                Button(action: {
+                    if capturedSource != nil {
+                        startProcessing()
+                    } else {
+                        scanState = .idle
+                    }
+                }) {
+                    HStack {
+                        Image(systemName: "arrow.clockwise")
+                        Text("Try Again")
+                    }
+                    .font(.headline)
+                    .foregroundColor(.white)
+                    .padding()
+                    .background(Color.blue)
+                    .cornerRadius(12)
+                }
+                
+                Button(action: {
+                    resetToIdle()
+                }) {
+                    HStack {
+                        Image(systemName: "plus")
+                        Text("Scan New")
+                    }
+                    .font(.headline)
+                    .foregroundColor(.blue)
+                    .padding()
+                    .background(Color.blue.opacity(0.1))
+                    .cornerRadius(12)
+                }
+            }
+        }
+    }
+    
+    // MARK: - Helper Methods
+    
+    private func handleCapturedImages(_ images: [UIImage], sourceType: String) {
+        capturedSource = .images(images, sourceType: sourceType)
+        scanState = .previewing
+    }
+    
+    private func handleFileSelection(_ result: Result<[URL], Error>) {
+        switch result {
+        case .success(let urls):
+            if let url = urls.first {
+                let fileName = url.lastPathComponent
+                capturedSource = .file(url, fileName: fileName)
+                scanState = .previewing
+            }
+        case .failure(let error):
+            print("Error selecting file: \(error)")
+            scanState = .error
+        }
+    }
+    
+    private func startProcessing() {
+        guard let source = capturedSource else { return }
+        
+        scanState = .processing
+        
+        Task {
+            switch source {
+            case .images(let images, _):
+                viewModel.processImagesDirectly(images)
+            case .file(let url, _):
+                let fileExtension = url.pathExtension.lowercased()
+                if fileExtension == "pdf" {
+                    viewModel.processPDF(url: url)
+                } else if ["jpg", "jpeg", "png"].contains(fileExtension) {
+                    viewModel.processImageFile(url: url)
+                }
+            }
+        }
+    }
+    
+    private func resetToIdle() {
+        scanState = .idle
+        capturedSource = nil
+        viewModel.resetState()
+    }
+    
+    private func iconForSource(_ source: CapturedSource) -> String {
+        switch source {
+        case .images(_, let sourceType):
+            return sourceType == "Camera" ? "camera.fill" : "doc.text.viewfinder"
+        case .file(let url, _):
+            let ext = url.pathExtension.lowercased()
+            return ext == "pdf" ? "doc.fill" : "photo.fill"
         }
     }
     
@@ -411,24 +590,6 @@ struct ScanView: View {
             func documentPickerWasCancelled(_ controller: UIDocumentPickerViewController) {
                 parent.onCompletion(.failure(NSError(domain: "DocumentPickerCancelled", code: 0)))
             }
-        }
-    }
-    
-    // MARK: - Actions
-    private func handleFileSelection(_ result: Result<[URL], Error>) {
-        switch result {
-        case .success(let urls):
-            if let url = urls.first {
-                let fileExtension = url.pathExtension.lowercased()
-                
-                if fileExtension == "pdf" {
-                    viewModel.processPDF(url: url)
-                } else if ["jpg", "jpeg", "png"].contains(fileExtension) {
-                    viewModel.processImageFile(url: url)
-                }
-            }
-        case .failure(let error):
-            print("Error selecting file: \(error)")
         }
     }
 }

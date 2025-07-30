@@ -73,8 +73,8 @@ final class TesseractOCRService: OCRServiceProtocol {
                 let progressMessage = "Processing page \(index + 1) of \(totalImages) with Tesseract (Fallback Mode)..."
                 progressHandler(progressMessage)
                 
-                // Simulate processing time
-                try await Task.sleep(nanoseconds: 500_000_000)
+                // Minimal processing delay for UI responsiveness
+                try await Task.sleep(nanoseconds: 50_000_000)
                 
             } catch {
                 let errorMessage = "Failed to process page \(index + 1): \(error.localizedDescription)"

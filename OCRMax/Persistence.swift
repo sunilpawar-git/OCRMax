@@ -35,6 +35,7 @@ struct PersistenceController {
         container = NSPersistentCloudKitContainer(name: "OCRMax")
         if inMemory {
             container.persistentStoreDescriptions.first!.url = URL(fileURLWithPath: "/dev/null")
+            container.persistentStoreDescriptions.first!.type = NSInMemoryStoreType
         }
         container.loadPersistentStores(completionHandler: { (storeDescription, error) in
             if let error = error as NSError? {
