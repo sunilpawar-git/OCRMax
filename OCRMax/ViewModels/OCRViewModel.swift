@@ -208,20 +208,29 @@ final class OCRViewModel: ObservableObject {
     }
     
     func processImagesDirectly(_ images: [UIImage]) {
-        // Store images for processing but don't auto-process
+        print("ViewModel: processImagesDirectly called with \(images.count) images")
+        // Store images for processing
         documentLibraryViewModel.capturedImages = images
         documentLibraryViewModel.selectedPDFURL = nil
         
-        // Start OCR processing immediately
-        Task {
-            ocrProcessingViewModel.processImages(images)
-            
-            // Save document after processing completes
+        print("ViewModel: Starting OCR processing")
+        // Start OCR processing immediately on the main thread
+        ocrProcessingViewModel.processImages(images)
+        
+        // Monitor completion and save document
+        Task { @MainActor in
+            print("ViewModel: Waiting for processing to complete")
             await waitForProcessingToComplete()
             
+            print("ViewModel: Processing completed, extractedText.count = \(ocrProcessingViewModel.extractedText.count)")
             if !ocrProcessingViewModel.extractedText.isEmpty {
                 saveProcessedDocument()
+                print("ViewModel: Document saved")
             }
+            
+            // Force UI update by triggering a state change
+            print("ViewModel: Forcing UI update - isProcessing = \(ocrProcessingViewModel.isProcessing)")
+            objectWillChange.send()
         }
     }
     
@@ -237,8 +246,20 @@ final class OCRViewModel: ObservableObject {
     }
     
     private func waitForProcessingToComplete() async {
-        while ocrProcessingViewModel.isProcessing {
+        // Give a small moment for the processing to actually start
+        try? await Task.sleep(nanoseconds: 50_000_000) // 0.05 second
+        
+        // Wait with a timeout to prevent infinite loops
+        let startTime = Date()
+        let timeout: TimeInterval = 30.0 // 30 seconds timeout
+        
+        while ocrProcessingViewModel.isProcessing && Date().timeIntervalSince(startTime) < timeout {
             try? await Task.sleep(nanoseconds: 100_000_000) // 0.1 second
+        }
+        
+        // If we timed out, there might be an issue
+        if Date().timeIntervalSince(startTime) >= timeout {
+            print("OCR processing timed out after 30 seconds")
         }
     }
     

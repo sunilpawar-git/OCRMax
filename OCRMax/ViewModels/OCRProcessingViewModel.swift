@@ -113,12 +113,18 @@ final class OCRProcessingViewModel: ObservableObject {
     }
     
     func processImages(_ images: [UIImage]) {
-        guard !isProcessing else { return }
+        print("OCRProcessing: processImages called with \(images.count) images")
+        guard !isProcessing else { 
+            print("OCRProcessing: Already processing, ignoring request")
+            return 
+        }
         
+        print("OCRProcessing: Resetting state and starting processing")
         resetProcessingState()
         isProcessing = true
         
-        Task {
+        Task { @MainActor in
+            print("OCRProcessing: Starting performImageOCRProcessing")
             await performImageOCRProcessing(images: images)
         }
     }
@@ -213,7 +219,7 @@ final class OCRProcessingViewModel: ObservableObject {
         return Int64(resourceValues.fileSize ?? 0)
     }
     
-    private func performOCRProcessing(url: URL) async {
+    func performOCRProcessing(url: URL) async {
         // isProcessing is already set to true at the start of processPDF
         progressText = "Analyzing PDF..."
         

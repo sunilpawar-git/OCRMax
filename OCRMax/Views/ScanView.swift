@@ -128,18 +128,28 @@ struct ScanView: View {
             }
         }
         .onChange(of: viewModel.showingShareSheet) { _, showing in
-            if showing {
+            print("UI: showingShareSheet changed to \(showing), scanState = \(scanState)")
+            if showing && scanState == .completed {
+                print("UI: Setting activeSheet to shareSheet")
                 activeSheet = .shareSheet
+                viewModel.showingShareSheet = false
+            } else if showing && scanState != .completed {
+                print("UI: Ignoring shareSheet request - not in completed state")
                 viewModel.showingShareSheet = false
             }
         }
         .onChange(of: viewModel.isProcessing) { _, isProcessing in
+            print("UI: onChange isProcessing = \(isProcessing), scanState = \(scanState)")
             if !isProcessing && scanState == .processing {
-                if viewModel.hasExtractedText {
-                    scanState = .completed
-                } else if viewModel.showingError {
-                    scanState = .error
-                }
+                print("UI: Processing finished, checking results...")
+                checkAndUpdateScanState()
+            }
+        }
+        .onChange(of: viewModel.extractedText) { _, _ in
+            print("UI: extractedText changed, count = \(viewModel.extractedText.count), scanState = \(scanState)")
+            if !viewModel.isProcessing && scanState == .processing && !viewModel.extractedText.isEmpty {
+                print("UI: Text extracted, updating state...")
+                checkAndUpdateScanState()
             }
         }
         .alert("Error", isPresented: $viewModel.showingError) {
@@ -194,6 +204,7 @@ struct ScanView: View {
             HStack(spacing: 20) {
                 // Camera Button
                 Button(action: {
+                    print("UI: Camera button tapped")
                     scanState = .capturing
                     activeSheet = .camera
                 }) {
@@ -316,6 +327,7 @@ struct ScanView: View {
                     // Action Buttons
                     HStack(spacing: 16) {
                         Button(action: {
+                            print("UI: Extract Text button tapped")
                             startProcessing()
                         }) {
                             HStack {
@@ -418,7 +430,17 @@ struct ScanView: View {
             // Action Buttons
             HStack(spacing: 16) {
                 Button(action: {
-                    viewModel.convertToWordDocument()
+                    Task { @MainActor in
+                        viewModel.convertToWordDocument()
+                        
+                        // Wait for export to complete, then trigger share sheet
+                        try? await Task.sleep(nanoseconds: 1_000_000_000) // 1 second
+                        
+                        if viewModel.showingShareSheet {
+                            activeSheet = .shareSheet
+                            viewModel.showingShareSheet = false
+                        }
+                    }
                 }) {
                     HStack {
                         Image(systemName: "doc.text")
@@ -433,6 +455,7 @@ struct ScanView: View {
                 .disabled(!viewModel.canConvertToWord)
                 
                 Button(action: {
+                    print("UI: Scan More button tapped")
                     resetToIdle()
                 }) {
                     HStack {
@@ -505,8 +528,10 @@ struct ScanView: View {
     // MARK: - Helper Methods
     
     private func handleCapturedImages(_ images: [UIImage], sourceType: String) {
+        print("UI: handleCapturedImages called with \(images.count) images from \(sourceType)")
         capturedSource = .images(images, sourceType: sourceType)
         scanState = .previewing
+        print("UI: State changed to previewing")
     }
     
     private func handleFileSelection(_ result: Result<[URL], Error>) {
@@ -524,15 +549,23 @@ struct ScanView: View {
     }
     
     private func startProcessing() {
-        guard let source = capturedSource else { return }
+        print("UI: startProcessing called")
+        guard let source = capturedSource else { 
+            print("UI: No captured source found")
+            return 
+        }
         
+        print("UI: Setting state to processing")
         scanState = .processing
         
         Task {
+            print("UI: Processing task started")
             switch source {
             case .images(let images, _):
+                print("UI: Calling processImagesDirectly with \(images.count) images")
                 viewModel.processImagesDirectly(images)
             case .file(let url, _):
+                print("UI: Processing file: \(url.lastPathComponent)")
                 let fileExtension = url.pathExtension.lowercased()
                 if fileExtension == "pdf" {
                     viewModel.processPDF(url: url)
@@ -544,9 +577,16 @@ struct ScanView: View {
     }
     
     private func resetToIdle() {
+        print("UI: resetToIdle called")
+        
+        // Clear any pending share sheet first
+        viewModel.showingShareSheet = false
+        activeSheet = nil
+        
         scanState = .idle
         capturedSource = nil
         viewModel.resetState()
+        print("UI: State reset to idle")
     }
     
     private func iconForSource(_ source: CapturedSource) -> String {
@@ -556,6 +596,34 @@ struct ScanView: View {
         case .file(let url, _):
             let ext = url.pathExtension.lowercased()
             return ext == "pdf" ? "doc.fill" : "photo.fill"
+        }
+    }
+    
+    private func showNoTextFoundError() {
+        // Trigger the error state with a helpful message
+        viewModel.ocrProcessingViewModel.errorMessage = "No text detected in the image. Please ensure the document is clearly visible with good lighting."
+        viewModel.ocrProcessingViewModel.showingError = true
+    }
+    
+    private func checkAndUpdateScanState() {
+        Task { @MainActor in
+            // Small delay to ensure all state updates are complete
+            try? await Task.sleep(nanoseconds: 100_000_000) // 0.1 second
+            
+            print("UI: checkAndUpdateScanState - hasExtractedText = \(viewModel.hasExtractedText), extractedText.count = \(viewModel.extractedText.count)")
+            
+            if viewModel.hasExtractedText {
+                print("UI: Transitioning to completed state")
+                scanState = .completed
+            } else if viewModel.showingError {
+                print("UI: Transitioning to error state")
+                scanState = .error
+            } else {
+                print("UI: No text found, showing error")
+                // Set a helpful error message for no text found
+                showNoTextFoundError()
+                scanState = .error
+            }
         }
     }
     

@@ -188,7 +188,7 @@ final class DocumentLibraryViewModel: ObservableObject {
             return
         }
         
-        Task {
+        Task { @MainActor in
             await exportDocument(extractedText: extractedText, textBlocks: textBlocks, layoutAnalysis: layoutAnalysis)
         }
     }
@@ -240,8 +240,12 @@ final class DocumentLibraryViewModel: ObservableObject {
                 documentURL = try documentExporter.exportDocument(from: extractedText, format: .rtf)
             }
             
-            wordDocumentURL = documentURL
-            showingShareSheet = true
+            // Set properties directly on main thread
+            await MainActor.run {
+                wordDocumentURL = documentURL
+                showingShareSheet = true
+                objectWillChange.send()
+            }
             
         } catch {
             handleError(error)
