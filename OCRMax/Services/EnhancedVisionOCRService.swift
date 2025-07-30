@@ -16,12 +16,16 @@ final class EnhancedVisionOCRService: EnhancedOCRServiceProtocol {
     private let payslipProcessor: PayslipImageProcessor
     private let payslipDetector: PayslipTableDetector
     private let tableParser: TableParserService
+    private let templateEngine: PayslipTemplateEngine
+    private let fieldExtractor: PayslipFieldExtractor
     
     init(configuration: VNRecognizeTextRequestConfiguration = EnhancedVisionOCRService.defaultConfiguration()) {
         self.visionService = VisionOCRService(configuration: configuration)
         self.imageEnhancer = DocumentImageEnhancer()
         self.payslipProcessor = PayslipImageProcessor(documentEnhancer: imageEnhancer)
         self.tableParser = TableParserService()
+        self.templateEngine = PayslipTemplateEngine()
+        self.fieldExtractor = PayslipFieldExtractor(templateEngine: templateEngine)
         self.payslipDetector = PayslipTableDetector(
             payslipProcessor: payslipProcessor,
             tableParser: tableParser
@@ -237,6 +241,47 @@ final class EnhancedVisionOCRService: EnhancedOCRServiceProtocol {
         )
     }
     
+    func recognizeMilitaryPayslip(from image: UIImage) async throws -> MilitaryPayslipRecognitionResult {
+        // Step 1: Enhance and process the image
+        let enhancedImage = try await imageEnhancer.enhanceImage(image)
+        
+        // Step 2: Perform OCR to get text blocks
+        let textBlocks = try await recognizeTextBlocksFromEnhanced(image: enhancedImage)
+        
+        // Step 3: Detect comprehensive payslip structure
+        let structureAnalysis = try await payslipDetector.detectPayslipStructure(in: enhancedImage, textBlocks: textBlocks)
+        
+        // Step 4: Identify the best matching template
+        let template = try await templateEngine.identifyPayslipTemplate(from: structureAnalysis)
+        
+        // Step 5: Extract structured military payslip data
+        let militaryPayslip = try await fieldExtractor.extractMilitaryPayslip(from: structureAnalysis, using: template)
+        
+        // Step 6: Validate payslip format
+        let validationResult = payslipDetector.validatePayslipFormat(analysis: structureAnalysis)
+        
+        // Step 7: Generate structured table data
+        let tableData = tableParser.generateTableData(from: structureAnalysis.parsedTable)
+        
+        return MilitaryPayslipRecognitionResult(
+            militaryPayslip: militaryPayslip,
+            template: template,
+            textBlocks: textBlocks,
+            structureAnalysis: structureAnalysis,
+            validationResult: validationResult,
+            tableData: tableData,
+            processingMetadata: ProcessingMetadata(
+                imageEnhancementTime: 0, // Could be tracked if needed
+                ocrProcessingTime: 0,    // Could be tracked if needed
+                structureAnalysisTime: 0, // Could be tracked if needed
+                fieldExtractionTime: militaryPayslip.extractionMetadata.processingTime,
+                totalProcessingTime: militaryPayslip.extractionMetadata.processingTime,
+                templateMatchConfidence: structureAnalysis.confidence,
+                overallSuccess: validationResult.isValid && militaryPayslip.confidence >= 0.7
+            )
+        )
+    }
+    
     static func payslipOptimizedConfiguration() -> VNRecognizeTextRequestConfiguration {
         var config = VNRecognizeTextRequestConfiguration()
         config.recognitionLevel = .accurate
@@ -306,4 +351,24 @@ struct PayslipRecognitionResult {
     let validationResult: PayslipValidationResult
     let tableData: TableData
     let overallConfidence: Float
+}
+
+struct MilitaryPayslipRecognitionResult {
+    let militaryPayslip: MilitaryPayslip
+    let template: PayslipTemplate
+    let textBlocks: [TextBlock]
+    let structureAnalysis: PayslipStructureAnalysis
+    let validationResult: PayslipValidationResult
+    let tableData: TableData
+    let processingMetadata: ProcessingMetadata
+}
+
+struct ProcessingMetadata {
+    let imageEnhancementTime: TimeInterval
+    let ocrProcessingTime: TimeInterval
+    let structureAnalysisTime: TimeInterval
+    let fieldExtractionTime: TimeInterval
+    let totalProcessingTime: TimeInterval
+    let templateMatchConfidence: Float
+    let overallSuccess: Bool
 }

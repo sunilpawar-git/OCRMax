@@ -431,13 +431,13 @@ struct PayslipValidationResult {
     let isValid: Bool
 }
 
-enum PayslipSectionType: CaseIterable {
-    case header
-    case employeeInfo
-    case earnings
-    case deductions
-    case netPay
-    case bankDetails
+enum PayslipSectionType: String, CaseIterable, Codable {
+    case header = "header"
+    case employeeInfo = "employee_info"
+    case earnings = "earnings"
+    case deductions = "deductions"
+    case netPay = "net_pay"
+    case bankDetails = "bank_details"
 }
 
 enum PayslipFieldType: CaseIterable {
