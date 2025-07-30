@@ -14,11 +14,18 @@ final class EnhancedVisionOCRService: EnhancedOCRServiceProtocol {
     private let visionService: VisionOCRService
     private let imageEnhancer: DocumentImageEnhancer
     private let payslipProcessor: PayslipImageProcessor
+    private let payslipDetector: PayslipTableDetector
+    private let tableParser: TableParserService
     
     init(configuration: VNRecognizeTextRequestConfiguration = EnhancedVisionOCRService.defaultConfiguration()) {
         self.visionService = VisionOCRService(configuration: configuration)
         self.imageEnhancer = DocumentImageEnhancer()
         self.payslipProcessor = PayslipImageProcessor(documentEnhancer: imageEnhancer)
+        self.tableParser = TableParserService()
+        self.payslipDetector = PayslipTableDetector(
+            payslipProcessor: payslipProcessor,
+            tableParser: tableParser
+        )
     }
     
     // MARK: - Enhanced OCR Methods
@@ -202,6 +209,34 @@ final class EnhancedVisionOCRService: EnhancedOCRServiceProtocol {
         return (textBlocks, tableStructure)
     }
     
+    func recognizePayslipWithAdvancedAnalysis(from image: UIImage) async throws -> PayslipRecognitionResult {
+        // Step 1: Enhance and process the image
+        let enhancedImage = try await imageEnhancer.enhanceImage(image)
+        
+        // Step 2: Perform OCR to get text blocks
+        let textBlocks = try await recognizeTextBlocksFromEnhanced(image: enhancedImage)
+        
+        // Step 3: Detect comprehensive payslip structure
+        let structureAnalysis = try await payslipDetector.detectPayslipStructure(in: enhancedImage, textBlocks: textBlocks)
+        
+        // Step 4: Validate payslip format
+        let validationResult = payslipDetector.validatePayslipFormat(analysis: structureAnalysis)
+        
+        // Step 5: Generate structured table data
+        let tableData = tableParser.generateTableData(from: structureAnalysis.parsedTable)
+        
+        return PayslipRecognitionResult(
+            textBlocks: textBlocks,
+            structureAnalysis: structureAnalysis,
+            validationResult: validationResult,
+            tableData: tableData,
+            overallConfidence: calculateOverallConfidence(
+                structureAnalysis: structureAnalysis,
+                validationResult: validationResult
+            )
+        )
+    }
+    
     static func payslipOptimizedConfiguration() -> VNRecognizeTextRequestConfiguration {
         var config = VNRecognizeTextRequestConfiguration()
         config.recognitionLevel = .accurate
@@ -250,6 +285,10 @@ final class EnhancedVisionOCRService: EnhancedOCRServiceProtocol {
         }
     }
     
+    private func calculateOverallConfidence(structureAnalysis: PayslipStructureAnalysis, validationResult: PayslipValidationResult) -> Float {
+        return (structureAnalysis.confidence + validationResult.score) / 2
+    }
+    
     private static func defaultConfiguration() -> VNRecognizeTextRequestConfiguration {
         var config = VNRecognizeTextRequestConfiguration()
         config.recognitionLevel = .accurate
@@ -257,4 +296,14 @@ final class EnhancedVisionOCRService: EnhancedOCRServiceProtocol {
         config.usesLanguageCorrection = true
         return config
     }
+}
+
+// MARK: - Enhanced Recognition Result
+
+struct PayslipRecognitionResult {
+    let textBlocks: [TextBlock]
+    let structureAnalysis: PayslipStructureAnalysis
+    let validationResult: PayslipValidationResult
+    let tableData: TableData
+    let overallConfidence: Float
 }
