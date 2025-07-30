@@ -18,6 +18,8 @@ final class SubscriptionViewModelTests: XCTestCase {
         super.setUp()
         mockSubscriptionManager = MockSubscriptionManager()
         sut = SubscriptionViewModel(subscriptionManager: mockSubscriptionManager)
+        // Reset call counts after initialization
+        mockSubscriptionManager.reset()
     }
     
     override func tearDown() {

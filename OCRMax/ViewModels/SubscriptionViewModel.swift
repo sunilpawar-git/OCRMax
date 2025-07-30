@@ -59,10 +59,8 @@ final class SubscriptionViewModel: ObservableObject {
     }
     
     // MARK: - Public Methods
-    func checkSubscriptionStatus() {
-        Task {
-            await subscriptionManager.checkSubscriptionStatus()
-        }
+    func checkSubscriptionStatus() async {
+        await subscriptionManager.checkSubscriptionStatus()
     }
     
     func requestPremiumUpgrade(for tier: SubscriptionTier) {
