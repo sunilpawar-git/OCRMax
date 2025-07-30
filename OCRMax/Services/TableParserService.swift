@@ -79,10 +79,10 @@ final class TableParserService: TableParserServiceProtocol {
         for cell in tableCells {
             // Find horizontal neighbors
             let rightNeighbor = findHorizontalNeighbor(of: cell, direction: .right, in: tableCells)
-            let leftNeighbor = findHorizontalNeighbor(of: cell, direction: .left, in: tableCells)
+            _ = findHorizontalNeighbor(of: cell, direction: .left, in: tableCells)
             
             // Find vertical neighbors
-            let aboveNeighbor = findVerticalNeighbor(of: cell, direction: .above, in: tableCells)
+            _ = findVerticalNeighbor(of: cell, direction: .above, in: tableCells)
             let belowNeighbor = findVerticalNeighbor(of: cell, direction: .below, in: tableCells)
             
             // Create relationships

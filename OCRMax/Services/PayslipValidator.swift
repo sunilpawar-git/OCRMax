@@ -134,7 +134,7 @@ final class PayslipValidator: PayslipValidatorProtocol {
         
         for issue in issues {
             switch issue.type {
-            case .financialMismatch(let expected, let actual, let field):
+            case .financialMismatch(let expected, let actual, _):
                 suggestions.append(CorrectionSuggestion(
                     issueType: issue.type,
                     suggestedValue: String(expected),
@@ -144,7 +144,7 @@ final class PayslipValidator: PayslipValidatorProtocol {
                     autoCorrectible: true
                 ))
                 
-            case .invalidFormat(let field, let expected, let actual):
+            case .invalidFormat(_, let expected, let actual):
                 let correctedValue = attemptFormatCorrection(actual, expectedFormat: expected)
                 if let corrected = correctedValue {
                     suggestions.append(CorrectionSuggestion(
@@ -157,7 +157,7 @@ final class PayslipValidator: PayslipValidatorProtocol {
                     ))
                 }
                 
-            case .outOfRange(let field, let value, let range):
+            case .outOfRange(_, let value, let range):
                 let suggestedValue = clampToRange(value, range: range)
                 suggestions.append(CorrectionSuggestion(
                     issueType: issue.type,
@@ -168,7 +168,7 @@ final class PayslipValidator: PayslipValidatorProtocol {
                     autoCorrectible: false
                 ))
                 
-            case .lowConfidence(let field, let confidence):
+            case .lowConfidence(_, let confidence):
                 suggestions.append(CorrectionSuggestion(
                     issueType: issue.type,
                     suggestedValue: "Manual review required",

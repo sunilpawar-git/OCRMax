@@ -309,7 +309,7 @@ final class PayslipFieldExtractor: PayslipFieldExtractorProtocol {
     
     private func correctNumericField(_ field: MilitaryPayslipField) -> MilitaryPayslipField {
         // Clean numeric value
-        var correctedValue = field.value
+        let correctedValue = field.value
             .replacingOccurrences(of: "₹", with: "")
             .replacingOccurrences(of: "Rs.", with: "")
             .replacingOccurrences(of: " ", with: "")
