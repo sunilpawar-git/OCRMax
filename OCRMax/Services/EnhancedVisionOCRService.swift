@@ -12,15 +12,22 @@ import UIKit
 final class EnhancedVisionOCRService: EnhancedOCRServiceProtocol {
     
     private let visionService: VisionOCRService
+    private let imageEnhancer: DocumentImageEnhancer
+    private let payslipProcessor: PayslipImageProcessor
     
     init(configuration: VNRecognizeTextRequestConfiguration = EnhancedVisionOCRService.defaultConfiguration()) {
         self.visionService = VisionOCRService(configuration: configuration)
+        self.imageEnhancer = DocumentImageEnhancer()
+        self.payslipProcessor = PayslipImageProcessor(documentEnhancer: imageEnhancer)
     }
     
     // MARK: - Enhanced OCR Methods
     
     func recognizeTextBlocks(from image: UIImage) async throws -> [TextBlock] {
-        guard let cgImage = image.cgImage else {
+        // Step 1: Enhance image for better OCR
+        let enhancedImage = try await imageEnhancer.enhanceImage(image)
+        
+        guard let cgImage = enhancedImage.cgImage else {
             throw OCRError.invalidImage
         }
         
@@ -61,11 +68,17 @@ final class EnhancedVisionOCRService: EnhancedOCRServiceProtocol {
         var allTextBlocks: [TextBlock] = []
         let totalImages = images.count
         
-        for (index, image) in images.enumerated() {
+        // First enhance all images
+        progressHandler("Enhancing images for better OCR...")
+        let enhancedImages = try await imageEnhancer.enhanceImages(images) { progress in
+            progressHandler("Image enhancement: \(progress)")
+        }
+        
+        for (index, image) in enhancedImages.enumerated() {
             progressHandler("Processing page \(index + 1) of \(totalImages)...")
             
             do {
-                let pageTextBlocks = try await recognizeTextBlocks(from: image)
+                let pageTextBlocks = try await recognizeTextBlocksFromEnhanced(image: image)
                 let updatedBlocks = pageTextBlocks.map { block in
                     TextBlock(
                         text: block.text,
@@ -172,6 +185,69 @@ final class EnhancedVisionOCRService: EnhancedOCRServiceProtocol {
         request.recognitionLevel = .accurate
         request.recognitionLanguages = ["en-US"]
         request.usesLanguageCorrection = true
+    }
+    
+    // MARK: - Payslip-Specific OCR Methods
+    
+    func recognizePayslipTextBlocks(from image: UIImage) async throws -> ([TextBlock], PayslipTableStructure) {
+        // Step 1: Process image specifically for payslip structure
+        let processedImage = try await payslipProcessor.processPayslipImage(image)
+        
+        // Step 2: Detect table structure
+        let tableStructure = try await payslipProcessor.detectTableStructure(in: processedImage)
+        
+        // Step 3: Perform OCR on the processed image
+        let textBlocks = try await recognizeTextBlocksFromEnhanced(image: processedImage)
+        
+        return (textBlocks, tableStructure)
+    }
+    
+    static func payslipOptimizedConfiguration() -> VNRecognizeTextRequestConfiguration {
+        var config = VNRecognizeTextRequestConfiguration()
+        config.recognitionLevel = .accurate
+        config.recognitionLanguages = ["en-US", "en-IN"]
+        config.usesLanguageCorrection = true
+        return config
+    }
+    
+    // MARK: - Private Helper Methods
+    
+    private func recognizeTextBlocksFromEnhanced(image: UIImage) async throws -> [TextBlock] {
+        guard let cgImage = image.cgImage else {
+            throw OCRError.invalidImage
+        }
+        
+        return try await withCheckedThrowingContinuation { continuation in
+            let request = VNRecognizeTextRequest { request, error in
+                if let error = error {
+                    continuation.resume(throwing: error)
+                    return
+                }
+                
+                guard let observations = request.results as? [VNRecognizedTextObservation] else {
+                    continuation.resume(throwing: OCRError.processingFailed)
+                    return
+                }
+                
+                let textBlocks = self.convertObservationsToTextBlocks(observations, pageIndex: 0)
+                
+                if textBlocks.isEmpty {
+                    continuation.resume(throwing: OCRError.noTextFound)
+                } else {
+                    continuation.resume(returning: textBlocks)
+                }
+            }
+            
+            self.configureRequest(request)
+            
+            let handler = VNImageRequestHandler(cgImage: cgImage, options: [:])
+            
+            do {
+                try handler.perform([request])
+            } catch {
+                continuation.resume(throwing: error)
+            }
+        }
     }
     
     private static func defaultConfiguration() -> VNRecognizeTextRequestConfiguration {
