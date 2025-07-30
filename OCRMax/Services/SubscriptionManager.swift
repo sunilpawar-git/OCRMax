@@ -16,6 +16,7 @@ final class SubscriptionManager: SubscriptionManagerProtocol, ObservableObject {
     private let storeKitService: StoreKitServiceProtocol
     private let userDefaults: UserDefaults
     private let cacheExpirationInterval: TimeInterval = 3600 // 1 hour
+    private var cacheInvalidated = false
     
     private var lastStatusCheck: Date?
     private var statusCheckTask: Task<Void, Never>?
@@ -60,12 +61,18 @@ final class SubscriptionManager: SubscriptionManagerProtocol, ObservableObject {
             return
         }
         
+        // Reset cache invalidation flag
+        cacheInvalidated = false
+        
         statusCheckTask = Task { @MainActor in
             isLoading = true
-            defer { isLoading = false }
+            defer { 
+                isLoading = false 
+                statusCheckTask = nil
+            }
             
             do {
-                let tier = try await storeKitService.checkSubscriptionStatus()
+                let tier = try await checkSubscriptionStatusWithRetry()
                 updateSubscriptionTier(tier)
                 lastStatusCheck = Date()
                 cacheSubscriptionStatus()
@@ -92,8 +99,14 @@ final class SubscriptionManager: SubscriptionManagerProtocol, ObservableObject {
             throw OCRError.unsupportedFormat
         }
         
-        isLoading = true
-        defer { isLoading = false }
+        await MainActor.run {
+            isLoading = true
+        }
+        defer { 
+            Task { @MainActor in
+                isLoading = false
+            }
+        }
         
         do {
             let success = try await storeKitService.requestPurchase(for: tier)
@@ -108,8 +121,14 @@ final class SubscriptionManager: SubscriptionManagerProtocol, ObservableObject {
     }
     
     func restorePurchases() async throws -> Bool {
-        isLoading = true
-        defer { isLoading = false }
+        await MainActor.run {
+            isLoading = true
+        }
+        defer { 
+            Task { @MainActor in
+                isLoading = false
+            }
+        }
         
         let tier = try await storeKitService.restorePurchases()
         let wasRestored = tier != .free
@@ -129,6 +148,25 @@ final class SubscriptionManager: SubscriptionManagerProtocol, ObservableObject {
     
     // MARK: - Private Methods
     
+    private func checkSubscriptionStatusWithRetry(maxRetries: Int = 3) async throws -> SubscriptionTier {
+        var lastError: Error?
+        
+        for attempt in 1...maxRetries {
+            do {
+                return try await storeKitService.checkSubscriptionStatus()
+            } catch {
+                lastError = error
+                if attempt < maxRetries {
+                    // Wait before retrying (exponential backoff)
+                    let delay = TimeInterval(pow(2.0, Double(attempt - 1))) * 0.5
+                    try await Task.sleep(nanoseconds: UInt64(delay * 1_000_000_000))
+                }
+            }
+        }
+        
+        throw lastError ?? OCRError.processingFailed
+    }
+    
     @MainActor
     private func updateSubscriptionTier(_ tier: SubscriptionTier) {
         currentTier = tier
@@ -136,7 +174,7 @@ final class SubscriptionManager: SubscriptionManagerProtocol, ObservableObject {
     
     private func shouldRefreshStatus() -> Bool {
         guard let lastCheck = lastStatusCheck else { return true }
-        return Date().timeIntervalSince(lastCheck) > cacheExpirationInterval
+        return cacheInvalidated || Date().timeIntervalSince(lastCheck) > cacheExpirationInterval
     }
     
     private func loadCachedSubscriptionStatus() {

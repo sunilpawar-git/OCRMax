@@ -30,6 +30,22 @@ class MockStoreKitService: StoreKitServiceProtocol {
     var retryCount = 0
     var artificialDelay: TimeInterval = 0.0
     
+    func reset() {
+        mockSubscriptionStatus = .free
+        shouldSucceedPurchase = true
+        shouldFailStatusCheck = false
+        isSubscriptionExpired = false
+        hasValidReceipt = true
+        purchaseRequested = false
+        requestedTier = nil
+        purchaseError = nil
+        statusCheckError = nil
+        statusCheckAttempts = 0
+        receiptValidated = false
+        retryCount = 0
+        artificialDelay = 0.0
+    }
+    
     func checkSubscriptionStatus() async throws -> SubscriptionTier {
         statusCheckAttempts += 1
         
@@ -38,17 +54,8 @@ class MockStoreKitService: StoreKitServiceProtocol {
             try await Task.sleep(nanoseconds: UInt64(artificialDelay * 1_000_000_000))
         }
         
-        // Handle retry logic
+        // Handle retry logic - fail first retryCount attempts, succeed after
         if shouldFailStatusCheck && statusCheckAttempts <= retryCount {
-            throw statusCheckError ?? URLError(.notConnectedToInternet)
-        }
-        
-        // Reset failure flag after retries
-        if statusCheckAttempts > retryCount {
-            shouldFailStatusCheck = false
-        }
-        
-        if shouldFailStatusCheck {
             throw statusCheckError ?? URLError(.notConnectedToInternet)
         }
         

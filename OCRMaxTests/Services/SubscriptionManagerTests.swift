@@ -17,6 +17,7 @@ final class SubscriptionManagerTests: XCTestCase {
     override func setUp() {
         super.setUp()
         mockStoreKit = MockStoreKitService()
+        mockStoreKit.reset()
         subscriptionManager = SubscriptionManager(storeKitService: mockStoreKit)
     }
     
@@ -43,10 +44,10 @@ final class SubscriptionManagerTests: XCTestCase {
     }
     
     func testExpiredSubscriptionHandling() async {
-        mockStoreKit.mockSubscriptionStatus = .free
+        mockStoreKit.mockSubscriptionStatus = .premium
         mockStoreKit.isSubscriptionExpired = true
         
-        await subscriptionManager.checkSubscriptionStatus()
+        await subscriptionManager.checkSubscriptionStatus(forceRefresh: true)
         
         XCTAssertFalse(subscriptionManager.isPremiumUser)
         XCTAssertEqual(subscriptionManager.currentTier, .free)
@@ -54,15 +55,17 @@ final class SubscriptionManagerTests: XCTestCase {
     
     // MARK: - Feature Access Tests
     
-    func testFreeUserFeatureAccess() {
-        subscriptionManager = SubscriptionManager(currentTier: .free)
+    func testFreeUserFeatureAccess() async {
+        mockStoreKit.mockSubscriptionStatus = .free
+        await subscriptionManager.checkSubscriptionStatus(forceRefresh: true)
         
         XCTAssertFalse(subscriptionManager.canUseFeature(.aiFormatting))
         XCTAssertFalse(subscriptionManager.canUseFeature(.enhancedLayout))
     }
     
-    func testPremiumUserFeatureAccess() {
-        subscriptionManager = SubscriptionManager(currentTier: .premium)
+    func testPremiumUserFeatureAccess() async {
+        mockStoreKit.mockSubscriptionStatus = .premium
+        await subscriptionManager.checkSubscriptionStatus(forceRefresh: true)
         
         XCTAssertTrue(subscriptionManager.canUseFeature(.aiFormatting))
         XCTAssertTrue(subscriptionManager.canUseFeature(.enhancedLayout))
@@ -137,20 +140,27 @@ final class SubscriptionManagerTests: XCTestCase {
     // MARK: - Network Error Handling Tests
     
     func testNetworkErrorHandling() async {
+        // First set up initial state
+        mockStoreKit.mockSubscriptionStatus = .premium
+        await subscriptionManager.checkSubscriptionStatus(forceRefresh: true)
+        XCTAssertEqual(subscriptionManager.currentTier, .premium)
+        
+        // Now simulate network error
         mockStoreKit.shouldFailStatusCheck = true
         mockStoreKit.statusCheckError = URLError(.notConnectedToInternet)
         
-        await subscriptionManager.checkSubscriptionStatus()
+        await subscriptionManager.checkSubscriptionStatus(forceRefresh: true)
         
         // Should maintain current status on network error
-        XCTAssertEqual(subscriptionManager.currentTier, .free)
+        XCTAssertEqual(subscriptionManager.currentTier, .premium)
     }
     
     func testRetryLogicOnFailure() async {
         mockStoreKit.shouldFailStatusCheck = true
         mockStoreKit.retryCount = 2 // Fail first 2 attempts, succeed on 3rd
+        mockStoreKit.mockSubscriptionStatus = .premium
         
-        await subscriptionManager.checkSubscriptionStatus()
+        await subscriptionManager.checkSubscriptionStatus(forceRefresh: true)
         
         XCTAssertEqual(mockStoreKit.statusCheckAttempts, 3)
     }
@@ -161,7 +171,7 @@ final class SubscriptionManagerTests: XCTestCase {
         mockStoreKit.hasValidReceipt = true
         mockStoreKit.mockSubscriptionStatus = .premium
         
-        await subscriptionManager.checkSubscriptionStatus()
+        await subscriptionManager.checkSubscriptionStatus(forceRefresh: true)
         
         XCTAssertTrue(subscriptionManager.isPremiumUser)
         XCTAssertTrue(mockStoreKit.receiptValidated)
@@ -171,7 +181,7 @@ final class SubscriptionManagerTests: XCTestCase {
         mockStoreKit.hasValidReceipt = false
         mockStoreKit.mockSubscriptionStatus = .premium
         
-        await subscriptionManager.checkSubscriptionStatus()
+        await subscriptionManager.checkSubscriptionStatus(forceRefresh: true)
         
         XCTAssertFalse(subscriptionManager.isPremiumUser)
         XCTAssertEqual(subscriptionManager.currentTier, .free)
@@ -181,14 +191,14 @@ final class SubscriptionManagerTests: XCTestCase {
     
     func testDowngradeHandling() async {
         mockStoreKit.mockSubscriptionStatus = .premium
-        await subscriptionManager.checkSubscriptionStatus()
+        await subscriptionManager.checkSubscriptionStatus(forceRefresh: true)
         XCTAssertEqual(subscriptionManager.currentTier, .premium)
         
         // Simulate subscription expiration
         mockStoreKit.mockSubscriptionStatus = .free
         mockStoreKit.isSubscriptionExpired = true
         
-        await subscriptionManager.checkSubscriptionStatus()
+        await subscriptionManager.checkSubscriptionStatus(forceRefresh: true)
         XCTAssertEqual(subscriptionManager.currentTier, .free)
     }
     
@@ -198,7 +208,7 @@ final class SubscriptionManagerTests: XCTestCase {
         mockStoreKit.mockSubscriptionStatus = .premium
         
         // First check should hit the network
-        await subscriptionManager.checkSubscriptionStatus()
+        await subscriptionManager.checkSubscriptionStatus(forceRefresh: true)
         XCTAssertEqual(mockStoreKit.statusCheckAttempts, 1)
         
         // Second check within cache period should not hit network
@@ -209,7 +219,7 @@ final class SubscriptionManagerTests: XCTestCase {
     func testForcedRefresh() async {
         mockStoreKit.mockSubscriptionStatus = .premium
         
-        await subscriptionManager.checkSubscriptionStatus()
+        await subscriptionManager.checkSubscriptionStatus(forceRefresh: true)
         await subscriptionManager.checkSubscriptionStatus(forceRefresh: true)
         
         XCTAssertEqual(mockStoreKit.statusCheckAttempts, 2)
@@ -221,13 +231,13 @@ final class SubscriptionManagerTests: XCTestCase {
         mockStoreKit.mockSubscriptionStatus = .premium
         mockStoreKit.artificialDelay = 0.1 // Add small delay to simulate network
         
-        // Start multiple concurrent status checks
-        async let check1 = subscriptionManager.checkSubscriptionStatus()
+        // Start multiple concurrent status checks - only first one forces refresh
+        async let check1 = subscriptionManager.checkSubscriptionStatus(forceRefresh: true)
         async let check2 = subscriptionManager.checkSubscriptionStatus()
         async let check3 = subscriptionManager.checkSubscriptionStatus()
         
         await check1
-        await check2
+        await check2 
         await check3
         
         // Should only make one network call due to request deduplication
