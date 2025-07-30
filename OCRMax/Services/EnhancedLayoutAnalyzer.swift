@@ -14,17 +14,22 @@ protocol EnhancedLayoutAnalyzerProtocol: LayoutAnalyzerProtocol {
     func classifyTableRegions(from textBlocks: [TextBlock], tableStructure: PayslipTableStructure) -> [TableRegion]
 }
 
-final class EnhancedLayoutAnalyzer: LayoutAnalyzer, EnhancedLayoutAnalyzerProtocol {
+final class EnhancedLayoutAnalyzer: EnhancedLayoutAnalyzerProtocol {
     
+    private let basicLayoutAnalyzer: LayoutAnalyzer
     private let tableDetectionThreshold: CGFloat = 0.7
     private let cellOverlapThreshold: CGFloat = 0.5
     private let headerRegionThreshold: CGFloat = 0.8
+    
+    init(basicLayoutAnalyzer: LayoutAnalyzer = LayoutAnalyzer()) {
+        self.basicLayoutAnalyzer = basicLayoutAnalyzer
+    }
     
     // MARK: - Enhanced Analysis Methods
     
     func analyzeTableStructure(from textBlocks: [TextBlock], tableStructure: PayslipTableStructure?) -> EnhancedLayoutAnalysis {
         // First get the basic layout analysis
-        let basicAnalysis = analyzeLayout(from: textBlocks)
+        let basicAnalysis = basicLayoutAnalyzer.analyzeLayout(from: textBlocks)
         
         guard let tableStructure = tableStructure else {
             // Return enhanced analysis without table-specific data
@@ -213,7 +218,7 @@ final class EnhancedLayoutAnalyzer: LayoutAnalyzer, EnhancedLayoutAnalyzerProtoc
         let dataCells = tableStructure.tableCells.filter { !excludingHeader.intersects($0.bounds) }
         let cellsByRow = Dictionary(grouping: dataCells) { $0.row }
         
-        for (rowIndex, rowCells) in cellsByRow {
+        for (_, rowCells) in cellsByRow {
             guard !rowCells.isEmpty else { continue }
             
             // Calculate bounding box for this row
@@ -329,6 +334,24 @@ final class EnhancedLayoutAnalyzer: LayoutAnalyzer, EnhancedLayoutAnalyzerProtoc
         
         // Weight cell confidence more heavily
         return (averageCellConfidence * 0.7) + (averageRegionConfidence * 0.3)
+    }
+    
+    // MARK: - LayoutAnalyzerProtocol Implementation
+    
+    func analyzeLayout(from textBlocks: [TextBlock]) -> LayoutAnalysis {
+        return basicLayoutAnalyzer.analyzeLayout(from: textBlocks)
+    }
+    
+    func detectColumns(in textBlocks: [TextBlock]) -> [ColumnGroup] {
+        return basicLayoutAnalyzer.detectColumns(in: textBlocks)
+    }
+    
+    func calculateSpacing(between textBlocks: [TextBlock]) -> SpacingInfo {
+        return basicLayoutAnalyzer.calculateSpacing(between: textBlocks)
+    }
+    
+    func groupTextBlocks(_ textBlocks: [TextBlock]) -> [TextGroup] {
+        return basicLayoutAnalyzer.groupTextBlocks(textBlocks)
     }
 }
 

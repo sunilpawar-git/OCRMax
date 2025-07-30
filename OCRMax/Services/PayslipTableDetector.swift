@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import UIKit
 import CoreGraphics
 
 protocol PayslipTableDetectorProtocol {
