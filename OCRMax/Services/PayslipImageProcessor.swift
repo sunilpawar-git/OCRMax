@@ -136,14 +136,14 @@ final class PayslipImageProcessor: PayslipImageProcessorProtocol {
         // Horizontal line detection kernel
         let horizontalKernel = CIFilter(name: "CIMorphologyRectangleMaximum")
         horizontalKernel?.setValue(image, forKey: kCIInputImageKey)
-        horizontalKernel?.setValue(15, forKey: kCIInputWidthKey)
-        horizontalKernel?.setValue(1, forKey: kCIInputHeightKey)
+        horizontalKernel?.setValue(15, forKey: "inputWidth")
+        horizontalKernel?.setValue(1, forKey: "inputHeight")
         
         // Vertical line detection kernel
         let verticalKernel = CIFilter(name: "CIMorphologyRectangleMaximum")
         verticalKernel?.setValue(image, forKey: kCIInputImageKey)
-        verticalKernel?.setValue(1, forKey: kCIInputWidthKey)
-        verticalKernel?.setValue(15, forKey: kCIInputHeightKey)
+        verticalKernel?.setValue(1, forKey: "inputWidth")
+        verticalKernel?.setValue(15, forKey: "inputHeight")
         
         guard let horizontal = horizontalKernel?.outputImage,
               let vertical = verticalKernel?.outputImage else {
@@ -180,7 +180,7 @@ final class PayslipImageProcessor: PayslipImageProcessorProtocol {
         
         // Create masks for header and footer regions
         let headerRect = CGRect(x: 0, y: imageHeight - headerHeight, width: image.extent.width, height: headerHeight)
-        let footerRect = CGRect(x: 0, y: 0, width: image.extent.width, height: footerHeight)
+        let _ = CGRect(x: 0, y: 0, width: image.extent.width, height: footerHeight) // Future footer processing
         
         // Apply stronger contrast to header region
         guard let headerCrop = CIFilter(name: "CICrop") else {
@@ -212,8 +212,8 @@ final class PayslipImageProcessor: PayslipImageProcessorProtocol {
         }
         
         morphFilter.setValue(image, forKey: kCIInputImageKey)
-        morphFilter.setValue(1, forKey: kCIInputWidthKey)      // 1 pixel wide
-        morphFilter.setValue(20, forKey: kCIInputHeightKey)    // 20 pixels tall
+        morphFilter.setValue(1, forKey: "inputWidth")      // 1 pixel wide
+        morphFilter.setValue(20, forKey: "inputHeight")    // 20 pixels tall
         
         guard let verticalLines = morphFilter.outputImage else {
             return image
